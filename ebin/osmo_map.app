@@ -3,7 +3,6 @@
 	 {vsn, "1"},
 	 {modules, [map, map_codec]},
 	 {registered, []},
-	 {mod, {map, []}},
 	 {applications, []},
 	 {env, [
 	  ]}
