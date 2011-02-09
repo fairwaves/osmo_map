@@ -1,0 +1,4 @@
+*.beam
+*.asn1db
+include/map.hrl
+src/map.erl
