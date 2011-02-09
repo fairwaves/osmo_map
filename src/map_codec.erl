@@ -22,7 +22,7 @@
 %-include("map.hrl").
 -include_lib("osmo_ss7/include/isup.hrl").
 
--export([parse_tcap_msg/1, encode_tcap_msgt/2]).
+-export([parse_tcap_msg/1, encode_tcap_msg/1]).
 -export([parse_addr_string/1, encode_addr_string/1]).
 
 -define(MAP_ADDR_NAT_UNKNOWN,		0).
@@ -82,8 +82,8 @@ parse_tcap_msg(Msg) when is_list(Msg) ->
 			Error
 	end.
 
-encode_tcap_msgt(Type, TcapMsgDec) ->
-	case asn1rt:encode('map', Type, TcapMsgDec) of
+encode_tcap_msg({Type, TcapMsgDec}) ->
+	case asn1rt:encode('map', 'MapSpecificPDUs', {Type, TcapMsgDec}) of
 		{ok, List} ->
 			list_to_binary(List);
 		Error ->
