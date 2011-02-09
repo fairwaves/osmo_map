@@ -72,7 +72,10 @@ encode_addr_string(#party_number{nature_of_addr_ind = NatureIsup,
 	binary_to_list(Bin).
 
 parse_tcap_msg(MsgBin) when is_binary(MsgBin) ->
-	case asn1rt:decode('map', 'MapSpecificPDUs', MsgBin) of
+	Msg = binary_to_list(MsgBin),
+	parse_tcap_msg(Msg);
+parse_tcap_msg(Msg) when is_list(Msg) ->
+	case asn1rt:decode('map', 'MapSpecificPDUs', Msg) of
 		{ok, {Type, TcapMsgDec}} ->
 			{Type, TcapMsgDec};
 		Error ->
@@ -80,4 +83,9 @@ parse_tcap_msg(MsgBin) when is_binary(MsgBin) ->
 	end.
 
 encode_tcap_msgt(Type, TcapMsgDec) ->
-	asn1rt:encode('map', Type, TcapMsgDec).
+	case asn1rt:encode('map', Type, TcapMsgDec) of
+		{ok, List} ->
+			list_to_binary(List);
+		Error ->
+			Error
+	end.
