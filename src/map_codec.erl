@@ -19,10 +19,56 @@
 
 -module(map_codec).
 -author('Harald Welte <laforge@gnumonks.org>').
--include("map.hrl").
+%-include("map.hrl").
+-include_lib("osmo_ss7/include/isup.hrl").
 
 -export([parse_tcap_msg/1, encode_tcap_msgt/2]).
+-export([parse_addr_string/1, encode_addr_string/1]).
 
+-define(MAP_ADDR_NAT_UNKNOWN,		0).
+-define(MAP_ADDR_NAT_INTERNATIONAL,	1).
+-define(MAP_ADDR_NAT_NATIONAL,		2).
+-define(MAP_ADDR_NAT_NETWORK_SPEC,	3).
+-define(MAP_ADDR_NAT_SUBSCRIBER,	4).
+-define(MAP_ADDR_NAT_RES,		5).
+-define(MAP_ADDR_NAT_ABBREVIATED,	6).
+-define(MAP_ADDR_NAT_RES_FOR_EXT,	7).
+
+% convert from MAP -> ISUP 'nature of address'
+nature_map2isup(NatureMap) ->
+	case NatureMap of
+		?MAP_ADDR_NAT_INTERNATIONAL -> ?ISUP_ADDR_NAT_INTERNATIONAL;
+		?MAP_ADDR_NAT_NATIONAL -> ?ISUP_ADDR_NAT_NATIONAL;
+		?MAP_ADDR_NAT_SUBSCRIBER -> ?ISUP_ADDR_NAT_SUBSCRIBER;
+		_ -> NatureMap
+	end.
+
+% convert from ISUP -> MAP 'nature of address'
+nature_isup2map(NatureIsup) ->
+	case NatureIsup of
+		?ISUP_ADDR_NAT_INTERNATIONAL -> ?MAP_ADDR_NAT_INTERNATIONAL;
+		?ISUP_ADDR_NAT_NATIONAL -> ?MAP_ADDR_NAT_NATIONAL;
+		?ISUP_ADDR_NAT_SUBSCRIBER -> ?MAP_ADDR_NAT_SUBSCRIBER;
+		_ -> NatureIsup
+	end.
+
+
+parse_addr_string(AddrList) when is_list(AddrList) ->
+	parse_addr_string(list_to_binary(AddrList));
+parse_addr_string(AddrBin) when is_binary(AddrBin) ->
+	<<1:1, NatureMap:3, Numplan:4, Remain/binary>> = AddrBin,
+	PhoneNum = isup_codec:parse_isup_party(Remain, 0),
+	NatureIsup = nature_map2isup(NatureMap),
+	#party_number{nature_of_addr_ind = NatureIsup,
+		      numbering_plan = Numplan,
+		      phone_number = PhoneNum}.
+
+encode_addr_string(#party_number{nature_of_addr_ind = NatureIsup,
+				 numbering_plan = Numplan,
+				 phone_number = PhoneNum}) ->
+	NatureMap = nature_isup2map(NatureIsup),
+	{PhoneBin, _OddEven} = isup_codec:encode_isup_party(PhoneNum),
+	<<1:1, NatureMap:3, Numplan:4, PhoneBin/binary>>.
 
 parse_tcap_msg(MsgBin) when is_binary(MsgBin) ->
 	case asn1rt:decode('map', 'MapSpecificPDUs', MsgBin) of
