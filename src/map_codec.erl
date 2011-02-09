@@ -68,7 +68,8 @@ encode_addr_string(#party_number{nature_of_addr_ind = NatureIsup,
 				 phone_number = PhoneNum}) ->
 	NatureMap = nature_isup2map(NatureIsup),
 	{PhoneBin, _OddEven} = isup_codec:encode_isup_party(PhoneNum),
-	<<1:1, NatureMap:3, Numplan:4, PhoneBin/binary>>.
+	Bin = <<1:1, NatureMap:3, Numplan:4, PhoneBin/binary>>,
+	binary_to_list(Bin).
 
 parse_tcap_msg(MsgBin) when is_binary(MsgBin) ->
 	case asn1rt:decode('map', 'MapSpecificPDUs', MsgBin) of
