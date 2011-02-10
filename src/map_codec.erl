@@ -107,7 +107,7 @@ encode_addr_string(#party_number{nature_of_addr_ind = NatureIsup,
 				 numbering_plan = Numplan,
 				 phone_number = PhoneNum}) ->
 	NatureMap = nature_isup2map(NatureIsup),
-	{PhoneBin, _OddEven} = encode_map_addr(PhoneNum),
+	PhoneBin = encode_map_addr(PhoneNum),
 	Bin = <<1:1, NatureMap:3, Numplan:4, PhoneBin/binary>>,
 	binary_to_list(Bin).
 
