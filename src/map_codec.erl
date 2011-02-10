@@ -52,12 +52,52 @@ nature_isup2map(NatureIsup) ->
 		_ -> NatureIsup
 	end.
 
+% Parse a TBCD-STRING
+parse_map_tbcd(<<>>, DigitList) ->
+	DigitList;
+parse_map_tbcd(BcdBin, DigitList) ->
+	<<Second:4, First:4, Remain/binary>> = BcdBin,
+	NewDigits = [First, Second],
+	parse_map_tbcd(Remain, DigitList ++ NewDigits).
+parse_map_tbcd(ListBcd) when is_list(ListBcd) ->
+	BinBcd = list_to_binary(ListBcd),
+	parse_map_tbcd(BinBcd);
+parse_map_tbcd(BinBcd) when is_binary(BinBcd) ->
+	parse_map_tbcd(BinBcd, []).
+
+% like parse_map_tbcd, but remove any trailing 0xF
+parse_map_addr(Bcd) ->
+	DigitList = parse_map_tbcd(Bcd),
+	LastDigit = lists:last(DigitList),
+	if
+		LastDigit == 15 ->
+			lists:sublist(DigitList, length(DigitList)-1);
+		true ->
+			DigitList
+	end.
+
+encode_map_tbcd(BcdInt) when is_integer(BcdInt) ->
+	BcdList = osmo_util:int2digit_list(BcdInt),
+	encode_map_tbcd(BcdList);
+encode_map_tbcd(BcdList) when is_list(BcdList) ->
+	encode_map_tbcd(BcdList, <<>>).
+encode_map_tbcd([], Bin) ->
+	Bin;
+encode_map_tbcd([First,Second|BcdList], Bin) ->
+	encode_map_tbcd(BcdList, <<Bin/binary, Second:4, First:4>>);
+encode_map_tbcd([Last], Bin) ->
+	encode_map_tbcd([], <<Bin/binary, 15:4, Last:4>>).
+
+encode_map_addr(Bcd) ->
+	encode_map_tbcd(Bcd).
+
+
 
 parse_addr_string(AddrList) when is_list(AddrList) ->
 	parse_addr_string(list_to_binary(AddrList));
 parse_addr_string(AddrBin) when is_binary(AddrBin) ->
 	<<1:1, NatureMap:3, Numplan:4, Remain/binary>> = AddrBin,
-	PhoneNum = isup_codec:parse_isup_party(Remain, 0),
+	PhoneNum = parse_map_addr(Remain),
 	NatureIsup = nature_map2isup(NatureMap),
 	#party_number{nature_of_addr_ind = NatureIsup,
 		      numbering_plan = Numplan,
@@ -67,7 +107,7 @@ encode_addr_string(#party_number{nature_of_addr_ind = NatureIsup,
 				 numbering_plan = Numplan,
 				 phone_number = PhoneNum}) ->
 	NatureMap = nature_isup2map(NatureIsup),
-	{PhoneBin, _OddEven} = isup_codec:encode_isup_party(PhoneNum),
+	{PhoneBin, _OddEven} = encode_map_addr(PhoneNum),
 	Bin = <<1:1, NatureMap:3, Numplan:4, PhoneBin/binary>>,
 	binary_to_list(Bin).
 
