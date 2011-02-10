@@ -1691,7 +1691,8 @@ DefaultCallHandling ::= ENUMERATED {
 	-- reception of values in range 2-31 shall be treated as "continueCall"
 	-- reception of values greater than 31 shall be treated as "releaseCall"
 
-CamelCapabilityHandling ::= INTEGER(1..16) 
+-- The Specification says 1..16, however some implementations are broken and send 0 !!! - laforge
+CamelCapabilityHandling ::= INTEGER(0..16) 
 	-- value 1 = CAMEL phase 1,
 	-- value 2 = CAMEL phase 2,
 	-- value 3 = CAMEL Phase 3,
