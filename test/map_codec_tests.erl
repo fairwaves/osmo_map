@@ -9,6 +9,22 @@
 -include_lib("osmo_ss7/include/mtp3.hrl").
 -include_lib("osmo_ss7/include/sccp.hrl").
 
+% modified version of assertEqual()
+-define(assertEqualArgs(Expect, Expr, Args),
+        ((fun (__X) ->
+            case (Expr) of
+                __X -> ok;
+                __V ->  ?debugFmt("Expected: ~w~nValue: ~w~n", [__X, __V]),
+			.erlang:error({assertEqual_failed,
+                                      [{module, ?MODULE},
+                                       {line, ?LINE},
+                                       {expression, (??Expr)},
+                                       {expected, __X},
+                                       {value, __V}] ++ Args})
+            end
+          end)(Expect))).
+-define(_assertEqualArgs(Expect, Expr, Args), ?_test(?assertEqual(Expect, Expr, Args))).
+
 -define(TCAP_MSG_BIN, <<100,65,73,4,81,1,2,200,107,42,40,40,6,7,0,17,134,5,1,1,1,160,29,97,27,128,2,7,128,161,9,6,7,4,0,0,1,0,1,3,162,3,2,1,0,163,5,161,3,2,1,0,108,13,163,11,2,1,64,2,1,8,48,3,10,1,0>>).
 -define(TCAP_MSG_DEC, {'end',{'MapSpecificPDUs_end',[81,1,2,200],{'EXTERNAL',{syntax,{0,0,17,773,1,1,1}},asn1_NOVALUE,[97,27,128,2,7,128,161,9,6,7,4,0,0,1,0,1,3,162,3,2,1,0,163,5,161,3,2,1,0]},[{basicROS,{returnError,{'MapSpecificPDUs_end_components_SEQOF_basicROS_returnError',{present,64},{local,8},{'RoamingNotAllowedParam',plmnRoamingNotAllowed,asn1_NOVALUE}}}}]}}).
 
@@ -54,30 +70,55 @@ pcap_parse_t() ->
 				  [File])
 	end.
 
-pcap_cb(sctp, _From, _Path, 2, DataBin) ->
+pcap_cb(sctp, _From, Path, 2, DataBin) ->
 	{ok, M2ua} = m2ua_codec:parse_m2ua_msg(DataBin),
-	handle_m2ua(M2ua).
+	M2uaReenc = m2ua_codec:encode_m2ua_msg(M2ua),
+	?assertEqualArgs(DataBin, M2uaReenc, [{layer, m2ua}, {path, Path}]),
+	handle_m2ua(M2ua, Path),
+	DataBin.
 
-handle_m2ua(#m2ua_msg{msg_class = ?M2UA_MSGC_MAUP,
-		      msg_type = ?M2UA_MAUP_MSGT_DATA,
-		      parameters = Params}) ->
+handle_m2ua(M2ua = #m2ua_msg{msg_class = ?M2UA_MSGC_MAUP,
+			     msg_type = ?M2UA_MAUP_MSGT_DATA,
+			     parameters = Params}, Path) ->
 	{_Len, M2uaPayload} = proplists:get_value(16#300, Params),
 	Mtp3 = mtp3_codec:parse_mtp3_msg(M2uaPayload),
-	handle_mtp3(Mtp3);
-handle_m2ua(M2ua = #m2ua_msg{}) ->
+	Mtp3Reenc = mtp3_codec:encode_mtp3_msg(Mtp3),
+	?assertEqualArgs(M2uaPayload, Mtp3Reenc, [{layer, mtp3}, {path, Path}]),
+	handle_mtp3(Mtp3, Path ++ [M2ua]);
+handle_m2ua(M2ua = #m2ua_msg{}, _Path) ->
 	M2ua.
 
-handle_mtp3(#mtp3_msg{service_ind = ?MTP3_SERV_SCCP,
-		      payload = Payload}) ->
+handle_mtp3(Mtp3 = #mtp3_msg{service_ind = ?MTP3_SERV_SCCP,
+			     payload = Payload}, Path) ->
 	{ok, SccpDec} = sccp_codec:parse_sccp_msg(Payload),
-	SccpEnc = handle_sccp(SccpDec);
-handle_mtp3(Mtp3 = #mtp3_msg{}) ->
+	SccpReenc = sccp_codec:encode_sccp_msg(SccpDec),
+	% We cannot assume that the data is equal due to SCCP allowing
+	% different encodings of the same data. instead we re-decode
+	{ok, SccpReencDec} = sccp_codec:parse_sccp_msg(SccpReenc),
+	?assertEqualArgs(SccpDec, SccpReencDec, [{layer, sccp}, {path, Path}]),
+	handle_sccp(SccpDec, Path ++ [Mtp3]);
+handle_mtp3(Mtp3 = #mtp3_msg{}, _Path) ->
 	Mtp3.
 
-handle_sccp(S = #sccp_msg{msg_type = ?SCCP_MSGT_UDT, parameters = Params}) ->
+handle_sccp(S = #sccp_msg{msg_type = ?SCCP_MSGT_UDT, parameters = Params}, Path) ->
 	UserData = proplists:get_value(user_data, Params),
-	MapDec = map_codec:parse_tcap_msg(UserData),
-	MapReEnc = map_codec:encode_tcap_msg(MapDec),
+	PathOut = Path ++ [S],
+	case map_codec:parse_tcap_msg(UserData) of
+	{error, Error} ->
+		ErrTuple = {Error, erlang:get_stacktrace(), []},
+		?debugFmt("Path: ~p~nMAP Decode Error: ~w~n", [PathOut, ErrTuple]),
+		erlang:error(ErrTuple);
+	MapDec ->
+		case map_codec:encode_tcap_msg(MapDec) of
+		{error, Error} ->
+			ErrTuple = {Error, erlang:get_stacktrace(), [{map_dec, MapDec}]},
+			?debugFmt("Path: ~p~nMAP Encode Error: ~w~n", [PathOut, ErrTuple]),
+			erlang:error(ErrTuple);
+		MapReenc ->
+			MapReencDec = map_codec:parse_tcap_msg(MapReenc),
+			?assertEqualArgs(MapDec, MapReencDec, [{layer, map}, {path, Path}])
+		end
+	end,
 	S;
-handle_sccp(S = #sccp_msg{}) ->
+handle_sccp(S = #sccp_msg{}, _Path) ->
 	S.
