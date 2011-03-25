@@ -1,6 +1,10 @@
+-- $Id: MAP-CH-DataTypes.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09)
+-- 17.7.3	Call handling data types
+ 
 MAP-CH-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CH-DataTypes (13) version9 (9)}
+   gsm-Network (1) modules (3) map-CH-DataTypes (13) version12 (12)}
 
 DEFINITIONS
 
@@ -29,7 +33,13 @@ EXPORTS
 	IST-AlertArg,
 	IST-AlertRes,
 	IST-CommandArg,
-IST-CommandRes
+IST-CommandRes,
+UU-Data,
+ReleaseResourcesArg,
+ReleaseResourcesRes,
+-- WS added exports needed by gsm_map.asn (extra asn1 file to handle older proto. ver.)
+RoutingInfo,
+CUG-CheckInfo
 ;
 
 IMPORTS
@@ -44,17 +54,18 @@ IMPORTS
 	IST-SupportIndicator,
 	IST-AlertTimerValue,
 	T-CSI,
-	NumberPortabilityStatus
+	NumberPortabilityStatus,
+	PagingArea
 FROM MAP-MS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-MS-DataTypes (11) version9 (9)}
+   gsm-Network (1) modules (3) map-MS-DataTypes (11) version12 (12)}
 
 	ForwardingOptions,
 	SS-List,
 	CCBS-Feature
 FROM MAP-SS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SS-DataTypes (14) version9 (9)}
+   gsm-Network (1) modules (3) map-SS-DataTypes (14) version12 (12)}
 
 	ISDN-AddressString,
 	ISDN-SubaddressString,
@@ -65,15 +76,16 @@ FROM MAP-SS-DataTypes {
 	LMSI,
 	Ext-BasicServiceCode,
 	AlertingPattern,
-	NAEA-PreferredCI
+	NAEA-PreferredCI,
+	EMLPP-Priority
 FROM MAP-CommonDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CommonDataTypes (18) version9 (9)}
+   gsm-Network (1) modules (3) map-CommonDataTypes (18) version12 (12)}
 
 	ExtensionContainer
 FROM MAP-ExtensionDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version9 (9)}
+   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version12 (12)}
 ;
 
 
@@ -113,10 +125,18 @@ SendRoutingInfoArg ::= SEQUENCE {
 	suppressIncomingCallBarring	[23]	NULL		OPTIONAL,
 	gsmSCF-InitiatedCall	[24]	NULL		OPTIONAL,
 	basicServiceGroup2	[25] Ext-BasicServiceCode	OPTIONAL,
-	networkSignalInfo2	[26] ExternalSignalInfo	OPTIONAL
+	networkSignalInfo2	[26] ExternalSignalInfo	OPTIONAL,
+	suppressMTSS	[27] SuppressMTSS	OPTIONAL,
+	mtRoamingRetrySupported	[28] NULL		OPTIONAL,
+	callPriority	[29]	EMLPP-Priority	OPTIONAL
 	 }
 
 SuppressionOfAnnouncement ::= NULL
+
+SuppressMTSS ::= BIT STRING {
+	suppressCUG	(0),
+	suppressCCBS	(1) } (SIZE (2..16))
+	--	Other bits than listed above shall be discarded
 
 InterrogationType ::= ENUMERATED {
 	basicCall  (0),
@@ -169,7 +189,9 @@ SendRoutingInfoRes ::= [3] SEQUENCE {
 	ss-List2		[18] SS-List	OPTIONAL,
 	basicService2	[19] Ext-BasicServiceCode	OPTIONAL,
 	allowedServices	[20] AllowedServices	OPTIONAL,
-	unavailabilityCause	[21] UnavailabilityCause	OPTIONAL
+	unavailabilityCause	[21] UnavailabilityCause	OPTIONAL,
+	releaseResourcesSupported	[22] NULL		OPTIONAL,
+	gsm-BearerCapability	[23] ExternalSignalInfo	OPTIONAL
 	}
 
 AllowedServices ::= BIT STRING {
@@ -233,13 +255,17 @@ ProvideRoamingNumberArg ::= SEQUENCE {
 	pre-pagingSupported	[17] NULL		OPTIONAL,
 	longFTN-Supported	[18]	NULL		OPTIONAL,
 	suppress-VT-CSI	[19]	NULL		OPTIONAL,
-	offeredCamel4CSIsInInterrogatingNode	[20] OfferedCamel4CSIs	OPTIONAL
+	offeredCamel4CSIsInInterrogatingNode	[20] OfferedCamel4CSIs	OPTIONAL,
+	mtRoamingRetrySupported	[21] NULL		OPTIONAL,
+	pagingArea	[22] PagingArea	OPTIONAL,
+	callPriority	[23]	EMLPP-Priority	OPTIONAL
 	 }
 
 ProvideRoamingNumberRes ::= SEQUENCE {
 	roamingNumber	ISDN-AddressString,
 	extensionContainer	ExtensionContainer	OPTIONAL,
-	...}
+	...,
+	releaseResourcesSupported	NULL			OPTIONAL }
 
 ResumeCallHandlingArg ::= SEQUENCE {
 	callReferenceNumber	[0] CallReferenceNumber	OPTIONAL,
@@ -256,7 +282,8 @@ ResumeCallHandlingArg ::= SEQUENCE {
 	...,
 	d-csi		[12]	D-CSI	OPTIONAL,
 	o-BcsmCamelTDPCriteriaList 	[13]	O-BcsmCamelTDPCriteriaList 	OPTIONAL,
-	basicServiceGroup2	[14] Ext-BasicServiceCode	OPTIONAL
+	basicServiceGroup2	[14] Ext-BasicServiceCode	OPTIONAL,
+	mtRoamingRetry	[15] NULL		OPTIONAL
 	 }
 
 UU-Data ::= SEQUENCE {
@@ -434,5 +461,15 @@ CallTerminationIndicator ::= ENUMERATED {
 
 	-- In MSCs not supporting linkage of all call activities, any value received shall
 	-- be interpreted as ' terminateCallActivityReferred '
+
+ReleaseResourcesArg ::= SEQUENCE{
+	msrn			ISDN-AddressString, 
+	extensionContainer	ExtensionContainer	OPTIONAL,
+	...}
+
+ReleaseResourcesRes ::= SEQUENCE{
+	extensionContainer	ExtensionContainer	OPTIONAL,
+	...}
+
 
 END

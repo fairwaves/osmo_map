@@ -1,6 +1,9 @@
+-- $Id: MAP-DialogueInformation.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09) 
+-- 17.4	MAP Dialogue Information
 MAP-DialogueInformation {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-DialogueInformation (3) version9 (9)}
+   gsm-Network (1) modules (3) map-DialogueInformation (3) version12 (12)}
 
 DEFINITIONS
 
@@ -12,9 +15,7 @@ BEGIN
 
 EXPORTS
 	map-DialogueAS,
-	MAP-DialoguePDU,
-	map-ProtectedDialogueAS,
-	MAP-ProtectedDialoguePDU
+	MAP-DialoguePDU
 
 ;
 
@@ -28,18 +29,13 @@ FROM MobileDomainDefinitions {
 	AddressString
 FROM MAP-CommonDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network(1) modules (3) map-CommonDataTypes (18) version9 (9)}
+   gsm-Network(1) modules (3) map-CommonDataTypes (18) version12 (12)}
 
 	ExtensionContainer
 FROM MAP-ExtensionDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version9 (9)}
+   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version12 (12)}
 
-	SecurityHeader,
-	ProtectedPayload
-FROM MAP-ST-DataTypes {
-   itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ST-DataTypes (27) version9 (9)}
 
 ;
 
@@ -89,11 +85,7 @@ MAP-RefuseInfo ::= SEQUENCE {
 Reason ::= ENUMERATED {
 	noReasonGiven	(0),
 	invalidDestinationReference	(1),
-	invalidOriginatingReference	(2),
-	encapsulatedAC-NotSupported	(3) ,
-	transportProtectionNotAdequate	(4)}
-	-- encapsulatedAC-NotSupported and transportProtectionNotAdequate must not be used in 
-	-- dialogues with an AC different from secureTransportHandling
+	invalidOriginatingReference	(2)}
 
 MAP-UserAbortInfo ::= SEQUENCE {
 	map-UserAbortChoice	MAP-UserAbortChoice,
@@ -131,19 +123,5 @@ MAP-ProviderAbortInfo ::= SEQUENCE {
 MAP-ProviderAbortReason ::= ENUMERATED {
 	abnormalDialogue  (0),
 	invalidPDU  (1)}
-
--- abstract syntax name for MAP-ProtectedDialoguePDU
-
-map-ProtectedDialogueAS  OBJECT IDENTIFIER ::=
-	{gsm-NetworkId as-Id map-ProtectedDialoguePDU (3) version1 (1)}
-
-MAP-ProtectedDialoguePDU ::= SEQUENCE {
-	encapsulatedAC	OBJECT IDENTIFIER,
-	securityHeader	SecurityHeader	OPTIONAL,
-	protectedPayload	ProtectedPayload	OPTIONAL,
-	...}
-	-- The protectedPayload carries the result of applying the security function 
-	-- defined in 3GPP TS 33.200 to the encoding of the securely transported 
-	-- MAP-DialoguePDU
 
 END

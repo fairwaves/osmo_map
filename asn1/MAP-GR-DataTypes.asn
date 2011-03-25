@@ -1,6 +1,12 @@
+-- $Id: MAP-GR-DataTypes.asn 34814 2010-11-08 23:15:16Z etxrab $
+--
+-- Taken from 3GPP TS 29.002 V9.3.0 (2010-09)
+--
+--17.7.12	Group Call data types
+ 
 MAP-GR-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-GR-DataTypes (23) version9 (9)}
+   gsm-Network (1) modules (3) map-GR-DataTypes (23) version12 (12)}
 
 DEFINITIONS
 
@@ -16,32 +22,43 @@ EXPORTS
 	SendGroupCallEndSignalArg,
 	SendGroupCallEndSignalRes,
 	ForwardGroupCallSignallingArg,
-	ProcessGroupCallSignallingArg
+	ProcessGroupCallSignallingArg,
+	SendGroupCallInfoArg,
+	SendGroupCallInfoRes
 ;
 
 IMPORTS
 	ISDN-AddressString,
 	IMSI,
+	TMSI,
 	EMLPP-Priority,
-	ASCI-CallReference
+	ASCI-CallReference,
+	SignalInfo,
+	GlobalCellId,
+	AccessNetworkSignalInfo
 FROM MAP-CommonDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CommonDataTypes (18) version9 (9)}
+   gsm-Network (1) modules (3) map-CommonDataTypes (18) version12 (12)}
 
 	Ext-TeleserviceCode
 FROM MAP-TS-Code {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-TS-Code (19) version9 (9)}
+   gsm-Network (1) modules (3) map-TS-Code (19) version12 (12)}
 
-	Kc
+	Kc,
+	AdditionalInfo,
+	GroupId,
+Long-GroupId,
+	AdditionalSubscriptions,
+	Cksn
 FROM MAP-MS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-MS-DataTypes (11) version9 (9)}
+   gsm-Network (1) modules (3) map-MS-DataTypes (11) version12 (12)}
 
 	ExtensionContainer
 FROM MAP-ExtensionDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version9 (9)}
+   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version12 (12)}
 ;
 
 
@@ -50,12 +67,23 @@ PrepareGroupCallArg ::= SEQUENCE {
 	asciCallReference	ASCI-CallReference,
 	codec-Info	CODEC-Info,
 	cipheringAlgorithm	CipheringAlgorithm,
-	groupKeyNumber	[0] GroupKeyNumber	OPTIONAL,
+	groupKeyNumber-Vk-Id	[0] GroupKeyNumber	OPTIONAL,
 	groupKey		[1] Kc		OPTIONAL,
+	-- this parameter shall not be sent and shall be discarded if received
 	priority		[2] EMLPP-Priority	OPTIONAL,
 	uplinkFree	[3] NULL		OPTIONAL,
 	extensionContainer	[4] ExtensionContainer	OPTIONAL,
-	...}
+	...,
+	vstk			[5] VSTK		OPTIONAL,
+	vstk-rand		[6] VSTK-RAND	OPTIONAL,
+	talkerChannelParameter	[7] NULL		OPTIONAL,
+	uplinkReplyIndicator	[8] NULL		OPTIONAL}
+
+VSTK ::= OCTET STRING (SIZE (16))
+
+VSTK-RAND ::= OCTET STRING (SIZE (5))
+	-- The 36 bit value is carried in bit 7 of octet 1 to bit 4 of octet 5
+	-- bits 3, 2, 1, and 0 of octet 5 are padded with zeros.
 
 PrepareGroupCallRes ::= SEQUENCE {
 	groupCallNumber	ISDN-AddressString,
@@ -65,7 +93,14 @@ PrepareGroupCallRes ::= SEQUENCE {
 SendGroupCallEndSignalArg ::= SEQUENCE {
 	imsi			IMSI			OPTIONAL,
 	extensionContainer	ExtensionContainer	OPTIONAL,
-	...}
+	...,
+	talkerPriority	[0]TalkerPriority	OPTIONAL,
+	additionalInfo	[1]AdditionalInfo	OPTIONAL }
+
+TalkerPriority ::= ENUMERATED {
+	normal  (0),
+	privileged  (1),
+	emergency  (2)}
 
 SendGroupCallEndSignalRes ::= SEQUENCE {
 	extensionContainer	ExtensionContainer	OPTIONAL,
@@ -80,14 +115,24 @@ ForwardGroupCallSignallingArg ::= SEQUENCE {
 	uplinkReleaseCommand	[4] NULL		OPTIONAL,
 	extensionContainer	ExtensionContainer	OPTIONAL,
 	..., 
-	stateAttributes	[5] StateAttributes	OPTIONAL }
+	stateAttributes	[5] StateAttributes	OPTIONAL,
+	talkerPriority	[6] TalkerPriority	OPTIONAL,
+	additionalInfo	[7] AdditionalInfo	OPTIONAL,
+	emergencyModeResetCommandFlag	[8] NULL		OPTIONAL,
+	sm-RP-UI		[9] SignalInfo	OPTIONAL,
+	an-APDU	[10] AccessNetworkSignalInfo	OPTIONAL
+ }
 
 ProcessGroupCallSignallingArg ::= SEQUENCE {
 	uplinkRequest	[0] NULL		OPTIONAL,
 	uplinkReleaseIndication	[1] NULL		OPTIONAL,
 	releaseGroupCall	[2] NULL		OPTIONAL,
 	extensionContainer	ExtensionContainer	OPTIONAL,
-	...}
+	...,
+	talkerPriority	[3] TalkerPriority	OPTIONAL,
+	additionalInfo	[4] AdditionalInfo	OPTIONAL,
+	emergencyModeResetCommandFlag	[5] NULL		OPTIONAL,
+	an-APDU	[6] AccessNetworkSignalInfo	OPTIONAL }
 
 GroupKeyNumber ::= INTEGER (0..15)
 
@@ -117,6 +162,38 @@ StateAttributes ::= SEQUENCE {
 	callOriginator			[8] NULL		OPTIONAL }
 
 	-- Refers to 3GPP TS 44.068 for definitions of StateAttributes fields. 
+
+
+SendGroupCallInfoArg ::= SEQUENCE {
+	requestedInfo	RequestedInfo,
+	groupId		Long-GroupId, 
+	teleservice	Ext-TeleserviceCode,
+	cellId		[0] GlobalCellId	OPTIONAL,
+	imsi			[1] IMSI		OPTIONAL,
+	tmsi			[2] TMSI		OPTIONAL,
+	additionalInfo	[3] AdditionalInfo	OPTIONAL,
+	talkerPriority	[4] TalkerPriority	OPTIONAL,
+	cksn			[5] Cksn		OPTIONAL,
+	extensionContainer	[6] ExtensionContainer	OPTIONAL,
+	... }
+
+RequestedInfo ::= ENUMERATED {
+	anchorMSC-AddressAndASCI-CallReference			(0),
+	imsiAndAdditionalInfoAndAdditionalSubscription		(1),
+	... }
+--	exception handling:
+--	an unrecognized value shall be rejected by the receiver with a return error cause of 
+--	unexpected data value
+
+SendGroupCallInfoRes ::= SEQUENCE {
+	anchorMSC-Address	[0] ISDN-AddressString	OPTIONAL,
+	asciCallReference	[1] ASCI-CallReference	OPTIONAL,
+	imsi			[2] IMSI		OPTIONAL,
+	additionalInfo	[3] AdditionalInfo	OPTIONAL,
+	additionalSubscriptions	[4] AdditionalSubscriptions	OPTIONAL,
+	kc			[5] Kc		OPTIONAL,
+	extensionContainer	[6] ExtensionContainer	OPTIONAL,
+	... }
 
 
 END

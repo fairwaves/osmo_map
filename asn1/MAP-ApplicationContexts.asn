@@ -1,6 +1,10 @@
+-- $Id: MAP-ApplicationContexts.asn 32509 2010-04-19 05:58:01Z etxrab $
+--17.3.3	ASN.1 Module for application-context-names
+--The following ASN.1 module summarises the application-context-name assigned to MAP application-contexts.
+-- 3GPP TS 29.002 V9.1.0 (2010-03)
 MAP-ApplicationContexts {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ApplicationContexts (2) version9 (9)}
+   gsm-Network (1) modules (3) map-ApplicationContexts (2) version11 (11)}
 
 DEFINITIONS
 
@@ -81,6 +85,9 @@ mwdMngtContext-v3  OBJECT IDENTIFIER ::=
 shortMsgMT-RelayContext-v3  OBJECT IDENTIFIER ::=
 	{map-ac shortMsgMT-Relay(25) version3(3)}
 
+shortMsgMT-Relay-VGCS-Context-v3  OBJECT IDENTIFIER ::=
+	{map-ac shortMsgMT-Relay-VGCS(41) version3(3)}
+
 imsiRetrievalContext-v2  OBJECT IDENTIFIER ::=
 	{map-ac imsiRetrieval(26) version2(2)}
 
@@ -101,6 +108,9 @@ ss-InvocationNotificationContext-v3  OBJECT IDENTIFIER ::=
 
 groupCallControlContext-v3  OBJECT IDENTIFIER ::=
 	{map-ac groupCallControl(31) version3(3)}
+
+groupCallInfoRetrievalContext-v3  OBJECT IDENTIFIER ::=
+	{map-ac groupCallInfoRetrieval(45) version3(3)}
 
 gprsLocationUpdateContext-v3  OBJECT IDENTIFIER ::=
 	{map-ac gprsLocationUpdate(32) version3(3)}
@@ -141,8 +151,8 @@ anyTimeInfoHandlingContext-v3  OBJECT IDENTIFIER ::=
 subscriberDataModificationNotificationContext-v3  OBJECT IDENTIFIER ::=
 	{map-ac subscriberDataModificationNotification(22) version3(3)}
 
-secureTransportHandlingContext-v3  OBJECT IDENTIFIER ::=
-	{map-ac secureTransportHandling(40) version3(3)}
+resourceManagementContext-v3  OBJECT IDENTIFIER ::=
+	{map-ac resourceManagement(44) version3(3)}
 
 -- The following Object Identifiers are reserved for application-contexts
 --  existing in previous versions of the protocol

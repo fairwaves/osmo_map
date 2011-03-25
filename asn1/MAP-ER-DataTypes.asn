@@ -1,6 +1,10 @@
+-- $Id: MAP-ER-DataTypes.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09) 
+-- 17.7.7	Error data types
+
 MAP-ER-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ER-DataTypes (17) version9 (9)}
+   gsm-Network (1) modules (3) map-ER-DataTypes (17) version12 (12)}
 
 DEFINITIONS
 
@@ -51,14 +55,14 @@ EXPORTS
 	PositionMethodFailure-Param,
 	UnknownOrUnreachableLCSClient-Param,
 	MM-EventNotSupported-Param,
-	SecureTransportErrorParam,
 	ATSI-NotAllowedParam,
 	ATM-NotAllowedParam,
 	IllegalSS-OperationParam,
 	SS-NotAvailableParam,
 	SS-SubscriptionViolationParam,
 	InformationNotAvailableParam,
-	TargetCellOutsideGCA-Param
+TargetCellOutsideGCA-Param,
+OngoingGroupCallParam
 
 ;
 
@@ -66,7 +70,7 @@ IMPORTS
 	SS-Status
 FROM MAP-SS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SS-DataTypes (14) version9 (9)}
+   gsm-Network (1) modules (3) map-SS-DataTypes (14) version12 (12)}
 
 	SignalInfo,
 	BasicServiceCode,
@@ -74,29 +78,31 @@ FROM MAP-SS-DataTypes {
 	AdditionalNetworkResource
 FROM MAP-CommonDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CommonDataTypes (18) version9 (9)}
-
-	SecurityHeader,
-	ProtectedPayload
-FROM MAP-ST-DataTypes {
-   itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ST-DataTypes (27) version9 (9)}
+   gsm-Network (1) modules (3) map-CommonDataTypes (18) version12 (12)}
 
 
 	SS-Code
 FROM MAP-SS-Code {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SS-Code (15) version9 (9)}
+   gsm-Network (1) modules (3) map-SS-Code (15) version12 (12)}
 
 	ExtensionContainer
 FROM MAP-ExtensionDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version9 (9)}
+   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version12 (12)}
 ;
 
 RoamingNotAllowedParam ::= SEQUENCE {
 	roamingNotAllowedCause	RoamingNotAllowedCause,
 	extensionContainer	ExtensionContainer	OPTIONAL,
+	...,
+	additionalRoamingNotAllowedCause	[0] AdditionalRoamingNotAllowedCause OPTIONAL }
+
+--	if the additionalRoamingNotallowedCause is received by the MSC/VLR or SGSN then the 
+--	roamingNotAllowedCause shall be discarded.
+
+AdditionalRoamingNotAllowedCause ::= ENUMERATED {
+	supportedRAT-TypesNotAllowed (0),
 	...}
 
 RoamingNotAllowedCause ::= ENUMERATED {
@@ -182,7 +188,14 @@ ExtensibleSystemFailureParam ::= SEQUENCE {
 	networkResource	NetworkResource	OPTIONAL,
 	extensionContainer	ExtensionContainer	OPTIONAL,
 	...,
-	additionalNetworkResource	[0] AdditionalNetworkResource	OPTIONAL }
+	additionalNetworkResource	[0] AdditionalNetworkResource	OPTIONAL,
+	failureCauseParam	[1] FailureCauseParam	OPTIONAL }
+
+FailureCauseParam ::= ENUMERATED {
+	limitReachedOnNumberOfConcurrentLocationRequests (0),
+	... }
+	-- if unknown value is received in FailureCauseParam it shall be ignored
+
 
 DataMissingParam ::= SEQUENCE {
 	extensionContainer	ExtensionContainer	OPTIONAL,
@@ -209,7 +222,7 @@ UnknownSubscriberParam ::= SEQUENCE {
 
 UnknownSubscriberDiagnostic ::= ENUMERATED {
 	imsiUnknown  (0),
-	gprsSubscriptionUnknown  (1),
+	gprs-eps-SubscriptionUnknown  (1),
 	...,
 	npdbMismatch  (2)}
 	-- if unknown values are received in 	
@@ -257,13 +270,16 @@ AbsentSubscriberReason ::= ENUMERATED {
 	restrictedArea (1),
 	noPageResponse (2),
 	... ,
-	purgedMS (3)}
+	purgedMS (3),
+	mtRoamingRetry (4)}
 -- exception handling: at reception of other values than the ones listed the 
 -- AbsentSubscriberReason shall be ignored. 
 -- The AbsentSubscriberReason: purgedMS is defined for the Super-Charger feature 
 -- (see TS 23.116). If this value is received in a Provide Roaming Number response
 -- it shall be mapped to the AbsentSubscriberReason: imsiDetach in the Send Routeing
 -- Information response
+-- The AbsentSubscriberReason: mtRoamingRetry is used during MT Roaming Retry, 
+-- see 3GPP TS 23.018[97].
 
 BusySubscriberParam ::= SEQUENCE {
 	extensionContainer	ExtensionContainer	OPTIONAL,
@@ -393,13 +409,9 @@ TargetCellOutsideGCA-Param ::= SEQUENCE {
 	extensionContainer	ExtensionContainer	OPTIONAL,
 	...}
 
-SecureTransportErrorParam ::= SEQUENCE {
-	securityHeader	SecurityHeader,
-	protectedPayload	ProtectedPayload	OPTIONAL
-	}
-	-- The protectedPayload carries the result of applying the security function 
-	-- defined in 3GPP TS 33.200 to the encoding of the securely transported error 
-	-- parameter
+OngoingGroupCallParam ::= SEQUENCE {
+	extensionContainer	ExtensionContainer	OPTIONAL,
+	...}
 
 
 END

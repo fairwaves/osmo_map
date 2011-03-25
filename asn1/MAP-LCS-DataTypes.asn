@@ -1,6 +1,14 @@
+-- $Id: MAP-LCS-DataTypes.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- MAP-LCS-DataTypes.asn
+--
+-- Taken from 3GPP TS 29.002  V9.3.0 (2010-09)
+--
+-- 17.7.13 Location service data types
+--
+
 MAP-LCS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-LCS-DataTypes (25) version9 (9)}
+   gsm-Network (1) modules (3) map-LCS-DataTypes (25) version12 (12)}
 
 DEFINITIONS
 IMPLICIT TAGS
@@ -21,12 +29,16 @@ EXPORTS
 	Horizontal-Accuracy,
 	ResponseTime,
 	Ext-GeographicalInformation,
+VelocityEstimate,
 	SupportedGADShapes,
 	Add-GeographicalInformation,
 	LCSRequestorID, 
 	LCS-ReferenceNumber,
 	LCSCodeword,
-	AreaEventInfo
+AreaEventInfo,
+ReportingPLMNList,
+PeriodicLDRInfo,
+SequenceNumber
 ;
 
 IMPORTS
@@ -40,33 +52,36 @@ IMPORTS
 	LCSClientExternalID,
 	LCSClientInternalID,
 	LCSServiceTypeID,
-	CellGlobalIdOrServiceAreaIdOrLAI
+CellGlobalIdOrServiceAreaIdOrLAI,
+PLMN-Id,
+	GSN-Address,
+	DiameterIdentity
 FROM MAP-CommonDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CommonDataTypes (18) version9 (9)}
+   gsm-Network (1) modules (3) map-CommonDataTypes (18) version12 (12)}
 
-	ExtensionContainer
+	ExtensionContainer,
+	SLR-ArgExtensionContainer
 FROM MAP-ExtensionDataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version9 (9)}
+   gsm-Network (1) modules (3) map-ExtensionDataTypes (21) version12 (12)}
 
 	USSD-DataCodingScheme,
 	USSD-String
 FROM MAP-SS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0) gsm-Network (1) modules (3)
-   map-SS-DataTypes (14) version9 (9)}
+   map-SS-DataTypes (14) version12 (12)}
 
 	APN,
-	GSN-Address,
 	SupportedLCS-CapabilitySets
 FROM MAP-MS-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-MS-DataTypes (11) version9 (9)}
+   gsm-Network (1) modules (3) map-MS-DataTypes (11) version12 (12)}
 
 	Additional-Number
 FROM MAP-SM-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SM-DataTypes (16) version9 (9)}
+   gsm-Network (1) modules (3) map-SM-DataTypes (16) version12 (12)}
 ;
 
 
@@ -88,7 +103,7 @@ RoutingInfoForLCS-Res ::= SEQUENCE {
 
 LCSLocationInfo ::= SEQUENCE {
 	networkNode-Number	ISDN-AddressString,
-	-- NetworkNode-number can be either msc-number or sgsn-number
+	-- NetworkNode-number can be msc-number, sgsn-number or a dummy value of "0"
 	lmsi			[0] LMSI		OPTIONAL,
 	extensionContainer	[1] ExtensionContainer	OPTIONAL,
 	... ,
@@ -96,7 +111,9 @@ LCSLocationInfo ::= SEQUENCE {
 	-- gprsNodeIndicator is set only if the SGSN number is sent as the Network Node Number
 	additional-Number	[3] Additional-Number	OPTIONAL,
 	supportedLCS-CapabilitySets	[4]	SupportedLCS-CapabilitySets	OPTIONAL,
-	additional-LCS-CapabilitySets	[5]	SupportedLCS-CapabilitySets	OPTIONAL
+	additional-LCS-CapabilitySets	[5]	SupportedLCS-CapabilitySets	OPTIONAL,
+	mme-Name		[6]	DiameterIdentity	OPTIONAL,
+	aaa-Server-Name	[8]	DiameterIdentity	OPTIONAL
 	}
 
 ProvideSubscriberLocation-Arg ::= SEQUENCE {
@@ -118,7 +135,10 @@ ProvideSubscriberLocation-Arg ::= SEQUENCE {
 	lcsCodeword	[12]	LCSCodeword	OPTIONAL,
 	lcs-PrivacyCheck	[13]	LCS-PrivacyCheck	OPTIONAL,
 	areaEventInfo	[14]	AreaEventInfo	OPTIONAL,
-	h-gmlc-Address	[15]	GSN-Address	OPTIONAL }
+	h-gmlc-Address	[15]	GSN-Address	OPTIONAL,
+	mo-lrShortCircuitIndicator	[16] NULL		OPTIONAL,
+	periodicLDRInfo	[17] PeriodicLDRInfo	OPTIONAL,
+	reportingPLMNList	[18] ReportingPLMNList	OPTIONAL }
 
 	-- one of imsi or msisdn is mandatory
 	-- If a location estimate type indicates activate deferred location or cancel deferred 
@@ -135,7 +155,8 @@ LocationEstimateType ::= ENUMERATED {
 	initialLocation	(2),
 	...,
 	activateDeferredLocation	(3),
-	cancelDeferredLocation	(4) }
+	cancelDeferredLocation	(4) ,
+	notificationVerificationOnly	(5) }
 --	exception handling:
 --	a ProvideSubscriberLocation-Arg containing an unrecognized LocationEstimateType
 --	shall be rejected by the receiver with a return error cause of unexpected data value
@@ -144,7 +165,8 @@ DeferredLocationEventType ::= BIT STRING {
 	msAvailable	(0) ,
 	enteringIntoArea	(1),
 	leavingFromArea	(2),
-	beingInsideArea	(3) } (SIZE (1..16)) 
+	beingInsideArea	(3) ,
+	periodicLDR	(4)  } (SIZE (1..16)) 
 -- beingInsideArea is always treated as oneTimeEvent regardless of the possible value
 -- of occurrenceInfo inside areaEventInfo.
 -- exception handling:
@@ -216,7 +238,9 @@ LCS-QoS ::= SEQUENCE {
 	verticalCoordinateRequest	[1] NULL		OPTIONAL,
 	vertical-accuracy	[2] Vertical-Accuracy	OPTIONAL,	responseTime	[3] ResponseTime	OPTIONAL,
 	extensionContainer	[4] ExtensionContainer	OPTIONAL,
-	...}
+	...,
+	velocityRequest	[5] NULL		OPTIONAL
+}
 
 Horizontal-Accuracy ::= OCTET STRING (SIZE (1))
 	-- bit 8 = 0
@@ -305,7 +329,8 @@ AreaType ::= ENUMERATED {
 	locationAreaId	(2),
 	routingAreaId	(3),
 	cellGlobalId	(4),
-	...}
+	...,
+	utranCellId	(5) }
 
 AreaIdentification ::= OCTET STRING (SIZE (2..7))
 	-- The internal structure is defined as follows:
@@ -316,9 +341,11 @@ AreaIdentification ::= OCTET STRING (SIZE (2..7))
 	--			or filler (1111)
 	-- octet 3 bits 4321	Mobile Network Code 1st digit
 	--         bits 8765	Mobile Network Code 2nd digit
-	-- octets 4 and 5	Location Area Code (LAC)
+	-- octets 4 and 5	Location Area Code (LAC) for Local Area Id,
+	--			Routing Area Id and Cell Global Id
 	-- octet 6	Routing Area Code (RAC) for Routing Area Id
 	-- octets 6 and 7	Cell Identity (CI) for Cell Global Id
+	-- octets 4 until 7	Utran Cell Identity (UC-Id) for Utran Cell Id
 
 OccurrenceInfo ::= ENUMERATED {
 	oneTimeEvent	(0),
@@ -327,6 +354,43 @@ OccurrenceInfo ::= ENUMERATED {
 
 IntervalTime ::= INTEGER (1..32767)
 	-- minimum interval time between area reports in seconds
+
+PeriodicLDRInfo ::= SEQUENCE {
+	reportingAmount		ReportingAmount,
+	reportingInterval	ReportingInterval,
+	...}
+-- reportingInterval x reportingAmount shall not exceed 8639999 (99 days, 23 hours,
+-- 59 minutes and 59 seconds) for compatibility with OMA MLP and RLP
+
+ReportingAmount ::= INTEGER (1..maxReportingAmount)
+
+maxReportingAmount INTEGER ::= 8639999
+
+ReportingInterval ::= INTEGER (1..maxReportingInterval)
+-- ReportingInterval is in seconds
+
+maxReportingInterval INTEGER ::= 8639999
+
+ReportingPLMNList::= SEQUENCE {
+	plmn-ListPrioritized			[0] NULL					OPTIONAL,
+	plmn-List 						[1] PLMNList,
+	...}
+
+PLMNList::= SEQUENCE SIZE (1..maxNumOfReportingPLMN) OF
+				ReportingPLMN
+
+maxNumOfReportingPLMN INTEGER ::= 20
+
+ReportingPLMN::= SEQUENCE {
+	plmn-Id 						[0] PLMN-Id,
+	ran-Technology 					[1] RAN-Technology			OPTIONAL,
+	ran-PeriodicLocationSupport		[2] NULL					OPTIONAL,
+	...}
+
+RAN-Technology ::= ENUMERATED {
+	gsm			(0),
+	umts		(1),
+	...}
 
 ProvideSubscriberLocation-Res ::= SEQUENCE {
 	locationEstimate	Ext-GeographicalInformation,
@@ -338,7 +402,12 @@ ProvideSubscriberLocation-Res ::= SEQUENCE {
 	geranPositioningData	[4] PositioningDataInformation	OPTIONAL,
 	utranPositioningData	[5] UtranPositioningDataInfo	OPTIONAL,
 	cellIdOrSai	[6] CellGlobalIdOrServiceAreaIdOrLAI	OPTIONAL,
-	sai-Present	[7] NULL		OPTIONAL }
+	sai-Present	[7] NULL		OPTIONAL,
+	accuracyFulfilmentIndicator	[8] AccuracyFulfilmentIndicator	OPTIONAL,
+	velocityEstimate	[9] VelocityEstimate	OPTIONAL,
+	mo-lrShortCircuitIndicator	[10] NULL		OPTIONAL,
+	geranGANSSpositioningData	[11] GeranGANSSpositioningData	OPTIONAL,
+	utranGANSSpositioningData	[12] UtranGANSSpositioningData	OPTIONAL,	targetServingNodeForHandover	[13] ServingNodeAddress	OPTIONAL }
 
 --	if deferredmt-lrResponseIndicator is set, locationEstimate is ignored.
 
@@ -352,6 +421,11 @@ ProvideSubscriberLocation-Res ::= SEQUENCE {
 -- shapeOfLocationEstimateNotSupported.
 -- sai-Present indicates that the cellIdOrSai parameter contains a Service Area Identity.
 
+AccuracyFulfilmentIndicator ::= ENUMERATED {
+	requestedAccuracyFulfilled  (0),
+	requestedAccuracyNotFulfilled  (1),
+	...	}
+
 Ext-GeographicalInformation ::= OCTET STRING (SIZE (1..maxExt-GeographicalInformation))
 	-- Refers to geographical Information defined in 3GPP TS 23.032.
 	-- This is composed of 1 or more octets with an internal structure according to
@@ -363,18 +437,18 @@ Ext-GeographicalInformation ::= OCTET STRING (SIZE (1..maxExt-GeographicalInform
 	--		(d) Ellipsoid Arc
 	--		(e) Ellipsoid Point
 	-- Any other value in octet 1 shall be treated as invalid
-	-- Octets 2 to 8 for case (a) - Ellipsoid point with uncertainty circle
+	-- Octets 2 to 8 for case (a) – Ellipsoid point with uncertainty circle
 	--		Degrees of Latitude				3 octets
 	--		Degrees of Longitude				3 octets
 	--		Uncertainty code				1 octet
-	-- Octets 2 to 11 for case (b) - Ellipsoid point with uncertainty ellipse:
+	-- Octets 2 to 11 for case (b) – Ellipsoid point with uncertainty ellipse:
 	--		Degrees of Latitude				3 octets
 	--		Degrees of Longitude				3 octets
 	--		Uncertainty semi-major axis				1 octet
 	--		Uncertainty semi-minor axis				1 octet
 	--		Angle of major axis				1 octet
 	--		Confidence				1 octet
-	-- Octets 2 to 14 for case (c) - Ellipsoid point with altitude and uncertainty ellipsoid
+	-- Octets 2 to 14 for case (c) – Ellipsoid point with altitude and uncertainty ellipsoid
 	--		Degrees of Latitude				3 octets
 	--		Degrees of Longitude				3 octets
 	--		Altitude				2 octets
@@ -383,7 +457,7 @@ Ext-GeographicalInformation ::= OCTET STRING (SIZE (1..maxExt-GeographicalInform
 	--		Angle of major axis				1 octet
 	--		Uncertainty altitude				1 octet
 	--		Confidence				1 octet
-	-- Octets 2 to 13 for case (d) - Ellipsoid Arc
+	-- Octets 2 to 13 for case (d) – Ellipsoid Arc
 	--		Degrees of Latitude				3 octets
 	--		Degrees of Longitude				3 octets
 	--		Inner radius				2 octets
@@ -391,7 +465,7 @@ Ext-GeographicalInformation ::= OCTET STRING (SIZE (1..maxExt-GeographicalInform
 	--		Offset angle				1 octet
 	--		Included angle				1 octet
 	--		Confidence				1 octet
-	-- Octets 2 to 7 for case (e) - Ellipsoid Point
+	-- Octets 2 to 7 for case (e) – Ellipsoid Point
 	--		Degrees of Latitude				3 octets
 	--		Degrees of Longitude				3 octets
 
@@ -412,6 +486,36 @@ maxExt-GeographicalInformation  INTEGER ::= 20
 	-- the maximum length allows for further shapes in 3GPP TS 23.032 to be included in later 
 	-- versions of 3GPP TS 29.002
 
+VelocityEstimate ::= OCTET STRING (SIZE (4..7))
+	-- Refers to Velocity description defined in 3GPP TS 23.032.
+	-- This is composed of 4 or more octets with an internal structure according to
+	-- 3GPP TS 23.032
+	-- Octet 1: Type of velocity, only the following types in 3GPP TS 23.032 are allowed:
+	--		(a) Horizontal Velocity
+	--		(b) Horizontal with Vertical Velocity
+	--		(c) Horizontal Velocity with Uncertainty
+	--		(d) Horizontal with Vertical Velocity and Uncertainty
+	-- For types Horizontal with Vertical Velocity and Horizontal with Vertical Velocity
+	-- and Uncertainty, the direction of the Vertical Speed is also included in Octet 1
+	-- Any other value in octet 1 shall be treated as invalid
+	-- Octets 2 to 4 for case (a) Horizontal velocity:
+	--		Bearing				1 octet
+	--		Horizontal Speed				2 octets
+	-- Octets 2 to 5 for case (b) – Horizontal with Vertical Velocity:
+	--		Bearing				1 octet
+	--		Horizontal Speed				2 octets
+	--		Vertical Speed				1 octet
+	-- Octets 2 to 5 for case (c) – Horizontal velocity with Uncertainty:
+	--		Bearing				1 octet
+	--		Horizontal Speed				2 octets
+	--		Uncertainty Speed				1 octet
+	-- Octets 2 to 7 for case (d) – Horizontal with Vertical Velocity and Uncertainty:
+	--		Bearing				1 octet
+	--		Horizontal Speed				2 octets
+	--		Vertical Speed				1 octet
+	--		Horizontal Uncertainty Speed			1 octet
+	--		Vertical Uncertainty Speed				1 octet
+
 PositioningDataInformation ::= OCTET STRING (SIZE (2..maxPositioningDataInformation))
 	-- Refers to the Positioning Data defined in 3GPP TS 49.031.
 	-- This is composed of 2 or more octets with an internal structure according to
@@ -426,6 +530,22 @@ UtranPositioningDataInfo ::= OCTET STRING (SIZE (3..maxUtranPositioningDataInfo)
 	-- included in positionData as defined in 3GPP TS 25.413.
 
 maxUtranPositioningDataInfo INTEGER ::= 11
+	-- 
+
+GeranGANSSpositioningData ::= OCTET STRING (SIZE (2..maxGeranGANSSpositioningData))
+	-- Refers to the GANSS Positioning Data defined in 3GPP TS 49.031.
+	-- This is composed of 2 or more octets with an internal structure according to
+	-- 3GPP TS 49.031. 
+
+maxGeranGANSSpositioningData INTEGER ::= 10
+	-- 
+
+UtranGANSSpositioningData ::= OCTET STRING (SIZE (1..maxUtranGANSSpositioningData))
+	-- Refers to the Position Data defined in 3GPP TS 25.413.
+	-- This is composed of the GANSS-PositioningDataSet only, included in PositionData
+     -- as defined in 3GPP TS 25.413.
+
+maxUtranGANSSpositioningData INTEGER ::= 9
 	-- 
 
 Add-GeographicalInformation ::= OCTET STRING (SIZE (1..maxAdd-GeographicalInformation))
@@ -460,18 +580,26 @@ SubscriberLocationReport-Arg ::= SEQUENCE {
 	na-ESRK		[4] ISDN-AddressString	OPTIONAL,
 	locationEstimate	[5] Ext-GeographicalInformation	OPTIONAL,
 	ageOfLocationEstimate	[6] AgeOfLocationInformation	OPTIONAL,
-	extensionContainer	[7] ExtensionContainer	OPTIONAL,
+	slr-ArgExtensionContainer	[7] SLR-ArgExtensionContainer	OPTIONAL,
 	... ,
 	add-LocationEstimate	[8] Add-GeographicalInformation	OPTIONAL,
 	deferredmt-lrData	[9] Deferredmt-lrData	OPTIONAL, 
 	lcs-ReferenceNumber	[10] LCS-ReferenceNumber	OPTIONAL,
 	geranPositioningData	[11] PositioningDataInformation	OPTIONAL,
 	utranPositioningData	[12] UtranPositioningDataInfo	OPTIONAL,
-	na-ESRK-Request	[16]	NULL		OPTIONAL,
 	cellIdOrSai	[13]	CellGlobalIdOrServiceAreaIdOrLAI	OPTIONAL,
 	h-gmlc-Address	[14]	GSN-Address	OPTIONAL,
 	lcsServiceTypeID	[15]	LCSServiceTypeID	OPTIONAL,
-	sai-Present	[17] NULL		OPTIONAL }
+	sai-Present	[17] NULL		OPTIONAL,
+	pseudonymIndicator	[18] NULL		OPTIONAL,
+	accuracyFulfilmentIndicator	[19] AccuracyFulfilmentIndicator	OPTIONAL,
+	velocityEstimate	[20] VelocityEstimate	OPTIONAL,
+	sequenceNumber	[21] SequenceNumber	OPTIONAL,
+	periodicLDRInfo	[22] PeriodicLDRInfo	OPTIONAL,
+	mo-lrShortCircuitIndicator	[23] NULL		OPTIONAL,
+	geranGANSSpositioningData	[24] GeranGANSSpositioningData	OPTIONAL,
+	utranGANSSpositioningData	[25] UtranGANSSpositioningData	OPTIONAL,
+	targetServingNodeForHandover	[26] ServingNodeAddress	OPTIONAL }
 
 	-- one of msisdn or imsi is mandatory
 	-- a location estimate that is valid for the locationEstimate parameter should 
@@ -502,7 +630,12 @@ LCS-Event ::= ENUMERATED {
 	emergencyCallRelease  (1), 
 	mo-lr  (2),
 	...,
-	deferredmt-lrResponse  (3) }
+	deferredmt-lrResponse  (3) ,
+	deferredmo-lrTTTPInitiation  (4),
+	emergencyCallHandover (5)  }
+	--	deferredmt-lrResponse is applicable to the delivery of a location estimate 
+	--	for an LDR initiated earlier by either the network (via an MT-LR activate deferred 
+	--	location) or the UE (via a deferred MO-LR TTTP initiation)
 	--	exception handling:
 	--	a SubscriberLocationReport-Arg containing an unrecognized LCS-Event
 	--	shall be rejected by a receiver with a return error cause of unexpected data value
@@ -515,7 +648,10 @@ TerminationCause ::= ENUMERATED {
 	mt-lrRestart  (4),
 	privacyViolation  (5),
 	...,
-	shapeOfLocationEstimateNotSupported (6) } 
+	shapeOfLocationEstimateNotSupported (6) ,
+	subscriberTermination (7),
+	uETermination (8),
+	networkTermination (9)  } 
 -- mt-lrRestart shall be used to trigger the GMLC to restart the location procedure, 
 -- either because the sending node knows that the terminal has moved under coverage 
 -- of another MSC or SGSN (e.g. Send Identification received), or because the subscriber
@@ -524,10 +660,27 @@ TerminationCause ::= ENUMERATED {
 -- exception handling
 -- an unrecognized value shall be treated the same as value 1 (errorundefined) 
 
+SequenceNumber ::= INTEGER (1..maxReportingAmount)
+
+ServingNodeAddress ::= CHOICE {
+	msc-Number	[0] ISDN-AddressString,
+	sgsn-Number	[1] ISDN-AddressString,
+	mme-Number	[2] DiameterIdentity }
+
 SubscriberLocationReport-Res ::= SEQUENCE {
 	extensionContainer	ExtensionContainer	OPTIONAL, 
 	..., 
-	na-ESRK		[0] ISDN-AddressString	OPTIONAL }
+	na-ESRK		[0] ISDN-AddressString	OPTIONAL,
+	na-ESRD		[1] ISDN-AddressString	OPTIONAL,
+	h-gmlc-Address	[2]	GSN-Address	OPTIONAL,
+	mo-lrShortCircuitIndicator	[3] NULL		OPTIONAL,
+	reportingPLMNList	[4] ReportingPLMNList	OPTIONAL,
+	lcs-ReferenceNumber	[5]	LCS-ReferenceNumber	OPTIONAL }
+
+-- na-ESRK and na-ESRD are mutually exclusive
+--
+-- exception handling
+-- receipt of both na-ESRK and na-ESRD shall be treated the same as a return error
 
 
 END

@@ -1,7 +1,10 @@
+-- $Id: MAP-CallHandlingOperations.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09) 
+--17.6.3	Call Handling Operations
 MAP-CallHandlingOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-CallHandlingOperations (7)
-   version9 (9)}
+   version12 (12)}
 
 DEFINITIONS
 
@@ -17,7 +20,8 @@ EXPORTS
 	statusReport,
 	remoteUserFree,
 	ist-Alert,
-	ist-Command
+	ist-Command,
+	releaseResources
 ;
 
 IMPORTS
@@ -49,7 +53,7 @@ joint-iso-itu-t remote-operations(4)
 
 FROM MAP-Errors {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-Errors (10) version9 (9)}
+   gsm-Network (1) modules (3) map-Errors (10) version12 (12)}
 	SendRoutingInfoArg,
 	SendRoutingInfoRes,
 	ProvideRoamingNumberArg,
@@ -65,10 +69,12 @@ FROM MAP-Errors {
 	IST-AlertArg,
 	IST-AlertRes,
 	IST-CommandArg,
-	IST-CommandRes
+	IST-CommandRes,
+	ReleaseResourcesArg,
+	ReleaseResourcesRes
 FROM MAP-CH-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-CH-DataTypes (13) version9 (9)}
+   gsm-Network (1) modules (3) map-CH-DataTypes (13) version12 (12)}
 
 ;
 
@@ -194,5 +200,16 @@ ist-Command  OPERATION::= {				--Timer m
 		systemFailure |
 		facilityNotSupported}
 	CODE	local:88 }
+
+releaseResources  OPERATION::= {				--Timer m
+	ARGUMENT
+		ReleaseResourcesArg
+	RESULT
+		ReleaseResourcesRes
+		-- optional
+	ERRORS {
+		unexpectedDataValue |
+		systemFailure }
+	CODE	local:20 }
 
 END

@@ -1,6 +1,9 @@
+-- $Id: MAP-Protocol.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09)
+--17.5	MAP operation and error codes
 MAP-Protocol {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-Protocol (4) version9 (9)}
+   gsm-Network (1) modules (3) map-Protocol (4) version12 (12)}
 
 DEFINITIONS
 
@@ -45,7 +48,7 @@ joint-iso-itu-t remote-operations(4) informationObjects(5) version1(0)}
 FROM MAP-MobileServiceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-MobileServiceOperations (5)
-   version9 (9)}
+   version12 (12)}
 
 	activateTraceMode,
 	deactivateTraceMode,
@@ -53,7 +56,7 @@ FROM MAP-MobileServiceOperations {
 FROM MAP-OperationAndMaintenanceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-OperationAndMaintenanceOperations (6)
-   version9 (9)}
+   version12 (12)}
 
 	sendRoutingInfo,
 	provideRoamingNumber,
@@ -62,11 +65,12 @@ FROM MAP-OperationAndMaintenanceOperations {
 	statusReport,
 	remoteUserFree,
 	ist-Alert,
-	ist-Command
+	ist-Command,
+	releaseResources
 FROM MAP-CallHandlingOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-CallHandlingOperations (7)
-   version9 (9)}
+   version12 (12)}
 
 	registerSS,
 	eraseSS,
@@ -84,7 +88,7 @@ FROM MAP-CallHandlingOperations {
 FROM MAP-SupplementaryServiceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-SupplementaryServiceOperations (8)
-   version9 (9)}
+   version12 (12)}
 
 	sendRoutingInfoForSM,
 	mo-ForwardSM,
@@ -92,20 +96,22 @@ FROM MAP-SupplementaryServiceOperations {
 	reportSM-DeliveryStatus,
 	alertServiceCentre,
 	informServiceCentre,
-	readyForSM
+	readyForSM,
+	mt-ForwardSM-VGCS
 FROM MAP-ShortMessageServiceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-ShortMessageServiceOperations (9)
-   version9 (9)}
+   version12 (12)}
 
 	prepareGroupCall,
 	processGroupCallSignalling,
 	forwardGroupCallSignalling,
-	sendGroupCallEndSignal
+	sendGroupCallEndSignal,
+	sendGroupCallInfo
 FROM MAP-Group-Call-Operations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-Group-Call-Operations (22)
-   version9 (9)}
+   version12 (12)}
 
 	provideSubscriberLocation,
 	sendRoutingInfoForLCS,
@@ -113,17 +119,8 @@ FROM MAP-Group-Call-Operations {
 FROM MAP-LocationServiceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-LocationServiceOperations (24)
-   version9 (9)}
+   version12 (12)}
 
-secureTransportClass1,
-secureTransportClass2,
-secureTransportClass3,
-secureTransportClass4
-
-FROM MAP-SecureTransportOperations {
-   itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SecureTransportOperations (26)
-   version9 (9)}
 
 ;
 Supported-MAP-Operations OPERATION ::= {updateLocation | cancelLocation | purgeMS | 
@@ -142,7 +139,7 @@ sendRoutingInfoForSM | mo-ForwardSM | mt-ForwardSM | reportSM-DeliveryStatus |
 alertServiceCentre | informServiceCentre | readyForSM | prepareGroupCall | 
 processGroupCallSignalling | forwardGroupCallSignalling | sendGroupCallEndSignal |
 provideSubscriberLocation | sendRoutingInfoForLCS | subscriberLocationReport | 
-secureTransportClass1 |secureTransportClass2 | secureTransportClass3 | secureTransportClass4}
+releaseResources | mt-ForwardSM-VGCS | sendGroupCallInfo }
 
 
 

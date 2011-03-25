@@ -1,9 +1,11 @@
--- asn1ct:compile("MAP-ShortMessageServiceOperations",[ber_bin, {outdir, "../compiled/umts_map"}]).
+-- $Id: MAP-ShortMessageServiceOperations.asn 34814 2010-11-08 23:15:16Z etxrab $
+-- 3GPP TS 29.002 V9.3.0 (2010-09)  
+-- 17.6.5	Short message service operations
 
 MAP-ShortMessageServiceOperations {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
    gsm-Network (1) modules (3) map-ShortMessageServiceOperations (9)
-   version9 (9)}
+   version12 (12)}
 
 DEFINITIONS
 
@@ -18,7 +20,8 @@ EXPORTS
 	reportSM-DeliveryStatus,
 	alertServiceCentre,
 	informServiceCentre,
-	readyForSM
+	readyForSM,
+	mt-ForwardSM-VGCS
 ;
 
 IMPORTS
@@ -43,7 +46,7 @@ joint-iso-itu-t remote-operations(4)
 	absentSubscriberSM
 FROM MAP-Errors {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-Errors (10) version9 (9)}
+   gsm-Network (1) modules (3) map-Errors (10) version12 (12)}
 
 	RoutingInfoForSM-Arg,
 	RoutingInfoForSM-Res,
@@ -56,10 +59,12 @@ FROM MAP-Errors {
 	AlertServiceCentreArg,
 	InformServiceCentreArg,
 	ReadyForSM-Arg,
-	ReadyForSM-Res
+	ReadyForSM-Res,
+	MT-ForwardSM-VGCS-Arg,
+	MT-ForwardSM-VGCS-Res
 FROM MAP-SM-DataTypes {
    itu-t identified-organization (4) etsi (0) mobileDomain (0)
-   gsm-Network (1) modules (3) map-SM-DataTypes (16) version9 (9)}
+   gsm-Network (1) modules (3) map-SM-DataTypes (16) version12 (12)}
 
 ;
 
@@ -151,5 +156,17 @@ readyForSM  OPERATION ::= {				--Timer m
 		facilityNotSupported |
 		unknownSubscriber}
 	CODE	local:66 }
+
+mt-ForwardSM-VGCS  OPERATION ::= {				--Timer ml
+	ARGUMENT
+		MT-ForwardSM-VGCS-Arg
+	RESULT
+		MT-ForwardSM-VGCS-Res
+		-- optional
+	ERRORS {
+		systemFailure |
+		unexpectedDataValue }
+	CODE	local:21 }
+
 
 END
