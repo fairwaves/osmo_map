@@ -160,7 +160,9 @@ SM-RP-OA ::= CHOICE {
 ReportSM-DeliveryStatusArg ::= SEQUENCE {
 	msisdn		ISDN-AddressString,
 	serviceCentreAddress	AddressString,
-	sm-DeliveryOutcome	SM-DeliveryOutcome,
+	-- Had to mark this as OPTIONAL to parse some strange messages [HW]
+	sm-DeliveryOutcome	SM-DeliveryOutcome	OPTIONAL,
+	-- End [HW]
 	absentSubscriberDiagnosticSM	[0] AbsentSubscriberDiagnosticSM
 							OPTIONAL,
 	extensionContainer	[1] ExtensionContainer	OPTIONAL,
