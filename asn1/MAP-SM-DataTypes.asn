@@ -269,6 +269,8 @@ DispatcherList ::=
 
 maxNumOfDispatchers  INTEGER ::= 5
 
-
+--- Imported from GSM TS 09.02 Version 4.19.1 (December 2000) [HW]
+NoteSubscriberPresentArg ::= IMSI
+--- End of import [HW]
 
 END

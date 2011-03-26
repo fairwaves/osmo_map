@@ -95,6 +95,10 @@ FROM MAP-SupplementaryServiceOperations {
 	mt-ForwardSM,
 	reportSM-DeliveryStatus,
 	alertServiceCentre,
+	-- Add Older version [HW]
+	alertServiceCentreWithoutResult,
+	noteSubscriberPresent,
+	-- End [HW]
 	informServiceCentre,
 	readyForSM,
 	mt-ForwardSM-VGCS
@@ -144,9 +148,12 @@ releaseResources | mt-ForwardSM-VGCS | sendGroupCallInfo
 | processUnstructuredSS-Data | notifySS | forwardChargeAdvice | forwardCUG-Info
 | buildMPTY | holdMPTY | retrieveMPTY | splitMPTY | explicitCT
 | accessRegisterCCEntry | callDeflection | userUserService
+
 | lcs-LocationNotification | lcs-MOLR | lcs-AreaEventRequest | lcs-AreaEventReport
 | lcs-AreaEventCancellation | lcs-PeriodicLocationRequest | lcs-LocationUpdate
 | lcs-PeriodicLocationCancellation
+
+| noteSubscriberPresent | alertServiceCentreWithoutResult
 -- End [HW]
 }
 

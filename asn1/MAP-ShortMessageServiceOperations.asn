@@ -129,6 +129,18 @@ reportSM-DeliveryStatus  OPERATION ::= {			--Timer s
 		messageWaitingListFull}
 	CODE	local:47 }
 
+--- Imported from GSM TS 09.02 Version 4.19.1 (December 2000) [HW]
+noteSubscriberPresent OPERATION ::= {
+	ARGUMENT
+		NoteSubscriberPresentArg
+	CODE	local:48 }
+
+alertServiceCentreWithoutResult OPERATION ::= {
+	ARGUMENT
+		AlertServiceCentreArg
+	CODE	local: 49 }
+--- End of import [HW]
+
 alertServiceCentre  OPERATION ::= {				--Timer s
 	ARGUMENT
 		AlertServiceCentreArg
