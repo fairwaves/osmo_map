@@ -139,7 +139,16 @@ sendRoutingInfoForSM | mo-ForwardSM | mt-ForwardSM | reportSM-DeliveryStatus |
 alertServiceCentre | informServiceCentre | readyForSM | prepareGroupCall | 
 processGroupCallSignalling | forwardGroupCallSignalling | sendGroupCallEndSignal |
 provideSubscriberLocation | sendRoutingInfoForLCS | subscriberLocationReport | 
-releaseResources | mt-ForwardSM-VGCS | sendGroupCallInfo }
+releaseResources | mt-ForwardSM-VGCS | sendGroupCallInfo
+-- Add SS-Operations [HW]
+| processUnstructuredSS-Data | notifySS | forwardChargeAdvice | forwardCUG-Info
+| buildMPTY | holdMPTY | retrieveMPTY | splitMPTY | explicitCT
+| accessRegisterCCEntry | callDeflection | userUserService
+| lcs-LocationNotification | lcs-MOLR | lcs-AreaEventRequest | lcs-AreaEventReport
+| lcs-AreaEventCancellation | lcs-PeriodicLocationRequest | lcs-LocationUpdate
+| lcs-PeriodicLocationCancellation
+-- End [HW]
+}
 
 
 
