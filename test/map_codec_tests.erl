@@ -26,7 +26,7 @@
 -define(_assertEqualArgs(Expect, Expr, Args), ?_test(?assertEqual(Expect, Expr, Args))).
 
 -define(TCAP_MSG_BIN, <<100,65,73,4,81,1,2,200,107,42,40,40,6,7,0,17,134,5,1,1,1,160,29,97,27,128,2,7,128,161,9,6,7,4,0,0,1,0,1,3,162,3,2,1,0,163,5,161,3,2,1,0,108,13,163,11,2,1,64,2,1,8,48,3,10,1,0>>).
--define(TCAP_MSG_DEC, {'end',{'MapSpecificPDUs_end',[81,1,2,200],{'EXTERNAL',{syntax,{0,0,17,773,1,1,1}},asn1_NOVALUE,[97,27,128,2,7,128,161,9,6,7,4,0,0,1,0,1,3,162,3,2,1,0,163,5,161,3,2,1,0]},[{basicROS,{returnError,{'MapSpecificPDUs_end_components_SEQOF_basicROS_returnError',{present,64},{local,8},{'RoamingNotAllowedParam',plmnRoamingNotAllowed,asn1_NOVALUE}}}}]}}).
+-define(TCAP_MSG_DEC, {'end',{'MapSpecificPDUs_end',[81,1,2,200],{'EXTERNAL',{syntax,{0,0,17,773,1,1,1}},asn1_NOVALUE,[97,27,128,2,7,128,161,9,6,7,4,0,0,1,0,1,3,162,3,2,1,0,163,5,161,3,2,1,0]},[{basicROS,{returnError,{'MapSpecificPDUs_end_components_SEQOF_basicROS_returnError',{present,64},{local,8},{'RoamingNotAllowedParam',plmnRoamingNotAllowed,asn1_NOVALUE,asn1_NOVALUE}}}}]}}).
 
 parse_test() ->
 	?assertEqual(?TCAP_MSG_DEC, map_codec:parse_tcap_msg(?TCAP_MSG_BIN)).
