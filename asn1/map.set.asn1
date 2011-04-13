@@ -3,6 +3,7 @@ MAP-BS-Code.asn
 MAP-CallHandlingOperations.asn
 MAP-CH-DataTypes.asn
 MAP-CommonDataTypes.asn
+MAP-Contracts.asn
 MAP-DialogueInformation.asn
 MAP-ER-DataTypes.asn
 MAP-Errors.asn
@@ -15,6 +16,7 @@ MAP-MobileServiceOperations.asn
 MAP-MS-DataTypes.asn
 MAP-OM-DataTypes.asn
 MAP-OperationAndMaintenanceOperations.asn
+MAP-OperationPackages.asn
 MAP-Protocol.asn
 MAP-ShortMessageServiceOperations.asn
 MAP-SM-DataTypes.asn
