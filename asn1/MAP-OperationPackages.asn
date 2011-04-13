@@ -194,7 +194,7 @@ interrogationPackage-v3  OPERATION-PACKAGE ::= {
 	CONSUMER INVOKES {
 		sendRoutingInfo} }
 
-andoverControlPackage-v3  OPERATION-PACKAGE ::= {
+handoverControlPackage-v3  OPERATION-PACKAGE ::= {
 	-- Supplier is MSCB if Consumer is MSCA
 	CONSUMER INVOKES {
 		prepareHandover |
