@@ -1,0 +1,115 @@
+-- Manual attempt to create ROSE/TCAP CONTRACT information object classes
+-- from the GSM MAP specification
+-- (C) 2011 by Harald Welte <laforge@gnumonks.org>
+
+MAP-Contracts
+
+DEFINITIONS
+
+::=
+
+BEGIN
+
+-- EXPORTS everything
+
+IMPORTS
+	CONTRACT
+FROM
+	Remote-Operations-Information-Objects
+	{joint-iso-itu-t remote-operations(4) informationObjects(5) version1(0)}
+
+	locationUpdatingPackage-v3, locationCancellationPackage-v3,
+	roamingNumberEnquiryPackage-v3, infoRetrievalPackage-v3,
+	infoRetrievalPackage-v2, interVlrInfoRetrievalPackage-v3,
+	interVlrInfoRetrievalPackage-v2, imsiRetrievalPackage-v2,
+	callControlTransferPackage-v4, interrogationPackage-v3,
+	handoverControlPackage-v3, subscriberDataMngtStandAlonePackage-v3,
+	equipmentMngtPackage-v3, subscriberDataMngtPackage-v3,
+	resetPackage-v2, tracingStandAlonePackage-v3,
+	functionalSsPackage-v2, tracingPackage-v3,
+	unstructuredSsPackage-v2
+FROM
+	MAP-OperationPackages
+	{itu-t identified-organization (4) etsi (0) mobileDomain (0)
+	gsm-Network (1) modules (3) map-OperationPackages (1)
+	version12 (12)}
+;
+
+locationUpdatingContract-v3  CONTRACT ::= {
+	OPERATIONS OF locationUpdatingPackage-v3
+}
+
+locationCancellationContract-v3  CONTRACT ::= {
+	OPERATIONS OF locationCancellationPackage-v3
+}
+
+roamingNumberEnquiryContract-v3  CONTRACT ::= {
+	OPERATIONS OF roamingNumberEnquiryPackage-v3
+}
+
+infoRetrievalContract-v3  CONTRACT ::= {
+	OPERATIONS OF infoRetrievalPackage-v3
+}
+
+infoRetrievalContract-v2  CONTRACT ::= {
+	OPERATIONS OF infoRetrievalPackage-v2
+}
+
+interVlrInfoRetrievalContract-v3  CONTRACT ::= {
+	OPERATIONS OF interVlrInfoRetrievalPackage-v3
+}
+
+interVlrInfoRetrievalContract-v2  CONTRACT ::= {
+	OPERATIONS OF interVlrInfoRetrievalPackage-v2
+}
+
+imsiRetrievalContract-v2  CONTRACT ::= {
+	OPERATIONS OF imsiRetrievalPackage-v2
+}
+
+callControlTransferContract-v4  CONTRACT ::= {
+	OPERATIONS OF callControlTransferPackage-v4
+}
+
+interrogationContract-v3  CONTRACT ::= {
+	OPERATIONS OF interrogationPackage-v3
+}
+
+handoverControlContract-v3  CONTRACT ::= {
+	OPERATIONS OF handoverControlPackage-v3
+}
+
+subscriberDataMngtStandAloneContract-v3  CONTRACT ::= {
+	OPERATIONS OF subscriberDataMngtStandAlonePackage-v3
+}
+
+equipmentMngtContract-v3  CONTRACT ::= {
+	OPERATIONS OF equipmentMngtPackage-v3
+}
+
+subscriberDataMngtContract-v3  CONTRACT ::= {
+	OPERATIONS OF subscriberDataMngtPackage-v3
+}
+
+resetContract-v2  CONTRACT ::= {
+	OPERATIONS OF resetPackage-v2
+}
+
+tracingStandAloneContract-v3  CONTRACT ::= {
+	OPERATIONS OF tracingStandAlonePackage-v3
+}
+
+functionalSsContract-v2  CONTRACT ::= {
+	OPERATIONS OF functionalSsPackage-v2
+}
+
+tracingContract-v3  CONTRACT ::= {
+	OPERATIONS OF tracingPackage-v3
+}
+
+unstructuredSsContract-v2  CONTRACT ::= {
+	OPERATIONS OF unstructuredSsPackage-v2
+}
+
+-- FIXME: missing packages / contracts
+END
