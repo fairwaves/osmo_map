@@ -19,7 +19,7 @@
 
 -module(map_codec).
 -author('Harald Welte <laforge@gnumonks.org>').
-%-include("map.hrl").
+-include("map.hrl").
 -include_lib("osmo_ss7/include/isup.hrl").
 
 -export([parse_tcap_msg/1, encode_tcap_msg/1]).
@@ -117,10 +117,30 @@ parse_tcap_msg(MsgBin) when is_binary(MsgBin) ->
 parse_tcap_msg(Msg) when is_list(Msg) ->
 	case asn1rt:decode('map', 'MapSpecificPDUs', Msg) of
 		{ok, {Type, TcapMsgDec}} ->
-			{Type, TcapMsgDec};
+			fixup_dialogue({Type, TcapMsgDec});
 		Error ->
 			Error
 	end.
+
+% Extract the dialoguePortion and feed it through external_1990ify/1
+fixup_dialogue({'begin', Beg = #'MapSpecificPDUs_begin'{dialoguePortion=Dia}}) ->
+	{'begin', Beg#'MapSpecificPDUs_begin'{dialoguePortion = external_1990ify(Dia)}};
+fixup_dialogue({'end', Beg = #'MapSpecificPDUs_end'{dialoguePortion=Dia}}) ->
+	{'end', Beg#'MapSpecificPDUs_end'{dialoguePortion = external_1990ify(Dia)}};
+fixup_dialogue({'continue', Beg = #'MapSpecificPDUs_continue'{dialoguePortion=Dia}}) ->
+	{'continue', Beg#'MapSpecificPDUs_continue'{dialoguePortion = external_1990ify(Dia)}};
+fixup_dialogue({'unidirectional', Beg = #'MapSpecificPDUs_unidirectional'{dialoguePortion=Dia}}) ->
+	{'unidirectional', Beg#'MapSpecificPDUs_unidirectional'{dialoguePortion = external_1990ify(Dia)}};
+fixup_dialogue(Default) ->
+	Default.
+
+% Take the EXTERNAL date type and convert from 1994-style to 1990 with 'single-ASN1-type'
+external_1990ify({'EXTERNAL', {syntax, DirRef}, IndirRef, Data}) when is_list(Data); is_binary(Data) ->
+	#'EXTERNAL'{'direct-reference' = DirRef,
+		    'indirect-reference' = IndirRef,
+		    encoding = {'single-ASN1-type', Data}};
+external_1990ify(Default) ->
+	Default.
 
 encode_tcap_msg({Type, TcapMsgDec}) ->
 	case asn1rt:encode('map', 'MapSpecificPDUs', {Type, TcapMsgDec}) of
