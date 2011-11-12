@@ -1,4 +1,9 @@
 *.beam
 *.asn1db
+*.diff
+*.old
+*.orig
 include/map.hrl
 src/map.erl
+.eunit
+erl_crash.dump
