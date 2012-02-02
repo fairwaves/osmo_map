@@ -24,6 +24,7 @@
 
 -export([parse_tcap_msg/1, encode_tcap_msg/1]).
 -export([parse_addr_string/1, encode_addr_string/1]).
+-export([parse_map_addr/1, encode_map_tbcd/1]).
 
 -define(MAP_ADDR_NAT_UNKNOWN,		0).
 -define(MAP_ADDR_NAT_INTERNATIONAL,	1).
