@@ -43,6 +43,9 @@
 	 build_inv_begin/5, build_retresl_end/4
  	]).
 
+-export([get_tcap_components/1, get_tcap_operation/1, get_tcap_operations/1,
+	 check_for_tcap_op/3]).
+
 format_id(undefined) ->
 	asn1_NOVALUE;
 format_id(Int) when is_integer(Int) ->
@@ -133,3 +136,45 @@ build_inv_begin(DlgId, InvId, ACname, Opcode, Argument) ->
 build_retresl_end(Dtid, InvId, ACname, Argument) ->
 	C = build_retreslast_comp(InvId, Argument),
 	build_end(Dtid, ACname, [C]).
+
+% get a list of components from the decoded TCAP+MAP nested record
+get_tcap_components({'begin', Beg}) ->
+	get_tcap_components(Beg);
+get_tcap_components({'end', Beg}) ->
+	get_tcap_components(Beg);
+get_tcap_components({'continue', Beg}) ->
+	get_tcap_components(Beg);
+% tcap_asn.erl
+get_tcap_components(#'Begin'{components=Comps}) ->
+	Comps;
+get_tcap_components(#'Continue'{components=Comps}) ->
+	Comps;
+get_tcap_components(#'End'{components=Comps}) ->
+	Comps;
+get_tcap_components(_) ->
+	[].
+
+% get the MAP operation of a specific component
+get_tcap_operation({basicROS, Rec}) ->
+	get_tcap_operation(Rec);
+get_tcap_operation({invoke, Rec}) ->
+	get_tcap_operation(Rec);
+get_tcap_operation({returnResult, Rec}) ->
+	get_tcap_operation(Rec);
+get_tcap_operation({returnResultNotLast, Rec}) ->
+	get_tcap_operation(Rec);
+get_tcap_operation(#'Invoke'{opcode=Op}) ->
+	{invoke, Op};
+get_tcap_operation(#'ReturnResult'{result=Res}) ->
+	{returnResult, Res#'ReturnResult_result'.opcode}.
+
+% get a list of the MAP operations inside the components of a MAP message
+get_tcap_operations(MapDec) ->
+	Comps = get_tcap_components(MapDec),
+	[get_tcap_operation(X) || X <- Comps].
+
+
+check_for_tcap_op(Comp, Op, MapDec) ->
+	MapOps = get_tcap_operations(MapDec),
+	% check for invoke of SRI-for-SM:
+	lists:member({Comp, Op}, MapOps).
