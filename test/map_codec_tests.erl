@@ -70,7 +70,7 @@ pcap_parse_t() ->
 	end.
 
 pcap_cb(sctp, _From, Path, 2, DataBin) ->
-	{ok, M2ua} = m2ua_codec:parse_m2ua_msg(DataBin),
+	M2ua = m2ua_codec:parse_m2ua_msg(DataBin),
 	M2uaReenc = m2ua_codec:encode_m2ua_msg(M2ua),
 	?assertEqualArgs(DataBin, M2uaReenc, [{layer, m2ua}, {path, Path}]),
 	handle_m2ua(M2ua, Path),
