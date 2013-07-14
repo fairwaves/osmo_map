@@ -171,7 +171,7 @@ rec4op({local, ?MAP_OP_ALERT_SC_NO_RESULT})	-> {error, 'FIXME'};
 rec4op({local, ?MAP_OP_ALERT_SC})		-> 'AlertServiceCentre';
 rec4op({local, ?MAP_OP_INFORM_SC})		-> 'InformServiceCentre';
 rec4op({local, ?MAP_OP_READY_FOR_SM})		-> 'ReadyForSM-';
-rec4op({local, ?MAP_OP_MT_FW_SMS_VGCS})		-> 'MT-ForwardSM-VGCS-';
+rec4op({local, ?MAP_OP_MT_FW_SMS_VGCS})		-> 'MT-ForwardSM-VGCS-'.
 % FIXME: SS-Operations.asn, SupplementaryServiceOperations, MAP-CallHandlingOperations, MAP-LocationServiceOperations
 
 argres(arg) -> "Arg";
