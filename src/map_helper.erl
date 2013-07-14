@@ -36,8 +36,10 @@
 
 -include_lib("osmo_ss7/include/isup.hrl").
 -include_lib("osmo_map/include/map.hrl").
+-include_lib("osmo_map/include/map_operations.hrl").
 
--export([postproc/2, postproc_gt/2, postproc_imsi/2, postproc_msisdn/2]).
+-export([postproc/2, postproc_gt/2, postproc_imsi/2, postproc_msisdn/2,
+	 encode_op/3, decode_op/3, timer4op/1, class4op/1]).
 
 postproc(M=#'UpdateLocationArg'{imsi = Imsi, 'msc-Number' = Msc, 'vlr-Number' = Vlr,
 				    'v-gmlc-Address' = Gmlc}, Mode) ->
@@ -132,3 +134,108 @@ postproc_msisdn([], pre) ->
 postproc_msisdn(In, pre) ->
 	map_codec:encode_map_tbcd(In).
 
+
+rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> 'UpdateLocation';
+rec4op({local, ?MAP_OP_CANCEL_LOCATION})	-> 'CancelLocation';
+rec4op({local, ?MAP_OP_PURGE_MS})		-> 'PurgeMS-';
+rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> 'SendIdentification';
+rec4op({local, ?MAP_OP_UPDATE_GRPS_LOCATION})	-> 'UpdateGprsLocation';
+rec4op({local, ?MAP_OP_PROVIDE_SUBSCR_INFO})	-> 'ProvideSubscriberInfo';
+rec4op({local, ?MAP_OP_ANYTIME_INTERROGATION})	-> 'AnyTimeInterrogation';
+rec4op({local, ?MAP_OP_ANYTIME_SUBSCR_INTERR})	-> 'AnyTimeSubscriptionInterrogation';
+rec4op({local, ?MAP_OP_ANYTIME_MODIFICATION})	-> 'AnyTimeModification';
+rec4op({local, ?MAP_OP_NOTE_SUBSCR_DAT_MODIF})	-> 'NoteSubscriberDataModified';
+rec4op({local, ?MAP_OP_PREPARE_HANDOVER})	-> 'PrepareHO-';
+rec4op({local, ?MAP_OP_SEND_END_SIGNAL})	-> 'SendEndSignal-';
+rec4op({local, ?MAP_OP_PROC_ACC_SIGNALLING})	-> 'ProcessAccessSignalling-';
+rec4op({local, ?MAP_OP_FWD_ACC_SIGNALLING})	-> 'ForwardAccessSignalling-';
+rec4op({local, ?MAP_OP_PREPARE_SUBSEQ_HO})	-> 'PrepareSubsequentHO-';
+rec4op({local, ?MAP_OP_SEND_AUTH_INFO})		-> 'SendAuthenticationInfo';
+rec4op({local, ?MAP_OP_AUTH_FAIL_REPORT})	-> 'AuthenticationFailureReport';
+rec4op({local, ?MAP_OP_CHECK_IMEI})		-> 'CheckIMEI-';
+rec4op({local, ?MAP_OP_INSERT_SUBSCR_DATA})	-> 'InsertSubscriberData';
+rec4op({local, ?MAP_OP_DELETE_SUBSCR_DATA})	-> 'DeleteSubscriberData';
+rec4op({local, ?MAP_OP_RESET})			-> 'Reset';
+rec4op({local, ?MAP_OP_FW_CHECK_SS})		-> {error, 'FIXME'};
+rec4op({local, ?MAP_OP_RESTORE_DATA})		-> 'RestoreData';
+rec4op({local, ?MAP_OP_SRI_FOR_GPRS})		-> 'SendRoutingInfoForGprs';
+rec4op({local, ?MAP_OP_FAILURE_REPORT})		-> 'FailureReport';
+rec4op({local, ?MAP_OP_NOTE_MS_PRESENT_GPRS})	-> 'NoteMsPresentForGprs';
+rec4op({local, ?MAP_OP_NOTE_MM_EVENT})		-> 'NoteMM-Event';
+rec4op({local, ?MAP_OP_SRI_FOR_SM})		-> 'SendRoutingInfo';
+rec4op({local, ?MAP_OP_MO_FORWARD_SM})		-> 'MO-ForwardSM-';
+rec4op({local, ?MAP_OP_MT_FORWARD_SM})		-> 'MT-ForwardSM-';
+rec4op({local, ?MAP_OP_REPORT_SM_DEL_STATUS})	-> 'ReportSM-DeliveryStatus';
+rec4op({local, ?MAP_OP_NOTE_SUBSCR_PRESENT})	-> {error, 'FIXME'};
+rec4op({local, ?MAP_OP_ALERT_SC_NO_RESULT})	-> {error, 'FIXME'};
+rec4op({local, ?MAP_OP_ALERT_SC})		-> 'AlertServiceCentre';
+rec4op({local, ?MAP_OP_INFORM_SC})		-> 'InformServiceCentre';
+rec4op({local, ?MAP_OP_READY_FOR_SM})		-> 'ReadyForSM-';
+rec4op({local, ?MAP_OP_MT_FW_SMS_VGCS})		-> 'MT-ForwardSM-VGCS-';
+% FIXME: SS-Operations.asn, SupplementaryServiceOperations, MAP-CallHandlingOperations, MAP-LocationServiceOperations
+
+argres(arg) -> "Arg";
+argres(argument) -> "Arg";
+argres(res) -> "Res";
+argres(result) -> "Res".
+
+decode_op(_, _, <<>>) ->
+	undefined;
+decode_op(_, _, []) ->
+	undefined;
+decode_op({local, Op}, ArgRes, Enc) when is_binary(Enc) or is_list(Enc) ->
+	case rec4op({local, Op}) of
+		{error, Err} ->
+			{error, Err};
+		TypePrefix ->
+			RecType = list_to_atom(TypePrefix ++ argres(ArgRes)),
+			map_only:decode(RecType, Enc)
+	end.
+
+encode_op({local, Op}, ArgRes, Dec) ->
+	case rec4op({local, Op}) of
+		{error, Err} ->
+			{error, Err};
+		TypePrefix ->
+			RecType = list_to_atom(TypePrefix ++ argres(ArgRes)),
+			map_only_encode(RecType, Dec)
+	end.
+
+timer4op({local, Op}) when is_integer(Op) ->
+	timer4op(Op);
+
+timer4op(?MAP_OP_SEND_IDENTIFICATION)	-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_SEND_END_SIGNAL)	-> ?MAP_INV_TIMER_L;
+timer4op(?MAP_OP_PROC_ACC_SIGNALLING)	-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_FWD_ACC_SIGNALLING)	-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_FW_CHECK_SS)		-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_MO_FORWARD_SM)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_MT_FORWARD_SM)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_REPORT_SM_DEL_STATUS)	-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_ALERT_SC)		-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_INFORM_SC)		-> ?MAP_INV_TIMER_S;
+timer4op(?MAP_OP_MT_FW_SMS_VGCS)	-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_PROC_USS_REQ)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_USS_REQ)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_USS_NOTIFY)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_REGISTER_PW)		-> ?MAP_INV_TIMER_ML;
+timer4op(?MAP_OP_PROV_SUBSCR_LOC)	-> ?MAP_INV_TIMER_ML;
+% FIXME: GroupCallOperations, OandMOperations, SecureTransportOperations
+timer4op(Op) when is_integer(Op)	-> ?MAP_INV_TIMER_M.
+
+class4op({local, Op}) when is_integer(Op) ->
+	class4op(Op);
+class4op(?MAP_OP_SEND_END_SIGNAL)	-> 3;
+class4op(?MAP_OP_PROC_ACC_SIGNALLING)	-> 4;
+class4op(?MAP_OP_FWD_ACC_SIGNALLING)	-> 4;
+class4op(?MAP_OP_RESET)			-> 4;
+class4op(?MAP_OP_FW_CHECK_SS)		-> 4;
+class4op(?MAP_OP_NOTE_SUBSCR_PRESENT)	-> 4;
+class4op(?MAP_OP_ALERT_SC_NO_RESULT)	-> 4;
+class4op(?MAP_OP_INFORM_SC)		-> 4;
+class4op(?MAP_OP_NOTIFY_SS)		-> 4;
+class4op(?MAP_OP_FW_CHG_ADVICE)		-> 3;
+class4op(?MAP_OP_FW_CUG_INFO)		-> 4;
+class4op(?MAP_OP_GET_PW)		-> 3;
+% FIXME: GroupCallOperations, OandMOperations, SecureTransportOperations
+class4op(Op) when is_integer(Op)	-> 1.
