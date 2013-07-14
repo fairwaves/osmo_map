@@ -135,7 +135,7 @@ postproc_msisdn(In, pre) ->
 	map_codec:encode_map_tbcd(In).
 
 
-rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> 'UpdateLocation';
+rec4op({local, ?MAP_OP_UPDATE_LOCATION})	-> 'UpdateLocation';
 rec4op({local, ?MAP_OP_CANCEL_LOCATION})	-> 'CancelLocation';
 rec4op({local, ?MAP_OP_PURGE_MS})		-> 'PurgeMS-';
 rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> 'SendIdentification';
@@ -198,7 +198,7 @@ encode_op({local, Op}, ArgRes, Dec) ->
 			{error, Err};
 		TypePrefix ->
 			RecType = list_to_atom(TypePrefix ++ argres(ArgRes)),
-			map_only_encode(RecType, Dec)
+			map_only:encode(RecType, Dec)
 	end.
 
 timer4op({local, Op}) when is_integer(Op) ->
