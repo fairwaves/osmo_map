@@ -135,43 +135,43 @@ postproc_msisdn(In, pre) ->
 	map_codec:encode_map_tbcd(In).
 
 
-rec4op({local, ?MAP_OP_UPDATE_LOCATION})	-> 'UpdateLocation';
-rec4op({local, ?MAP_OP_CANCEL_LOCATION})	-> 'CancelLocation';
-rec4op({local, ?MAP_OP_PURGE_MS})		-> 'PurgeMS-';
-rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> 'SendIdentification';
-rec4op({local, ?MAP_OP_UPDATE_GRPS_LOCATION})	-> 'UpdateGprsLocation';
-rec4op({local, ?MAP_OP_PROVIDE_SUBSCR_INFO})	-> 'ProvideSubscriberInfo';
-rec4op({local, ?MAP_OP_ANYTIME_INTERROGATION})	-> 'AnyTimeInterrogation';
-rec4op({local, ?MAP_OP_ANYTIME_SUBSCR_INTERR})	-> 'AnyTimeSubscriptionInterrogation';
-rec4op({local, ?MAP_OP_ANYTIME_MODIFICATION})	-> 'AnyTimeModification';
-rec4op({local, ?MAP_OP_NOTE_SUBSCR_DAT_MODIF})	-> 'NoteSubscriberDataModified';
-rec4op({local, ?MAP_OP_PREPARE_HANDOVER})	-> 'PrepareHO-';
-rec4op({local, ?MAP_OP_SEND_END_SIGNAL})	-> 'SendEndSignal-';
-rec4op({local, ?MAP_OP_PROC_ACC_SIGNALLING})	-> 'ProcessAccessSignalling-';
-rec4op({local, ?MAP_OP_FWD_ACC_SIGNALLING})	-> 'ForwardAccessSignalling-';
-rec4op({local, ?MAP_OP_PREPARE_SUBSEQ_HO})	-> 'PrepareSubsequentHO-';
-rec4op({local, ?MAP_OP_SEND_AUTH_INFO})		-> 'SendAuthenticationInfo';
-rec4op({local, ?MAP_OP_AUTH_FAIL_REPORT})	-> 'AuthenticationFailureReport';
-rec4op({local, ?MAP_OP_CHECK_IMEI})		-> 'CheckIMEI-';
-rec4op({local, ?MAP_OP_INSERT_SUBSCR_DATA})	-> 'InsertSubscriberData';
-rec4op({local, ?MAP_OP_DELETE_SUBSCR_DATA})	-> 'DeleteSubscriberData';
-rec4op({local, ?MAP_OP_RESET})			-> 'Reset';
-rec4op({local, ?MAP_OP_FW_CHECK_SS})		-> {error, 'FIXME'};
-rec4op({local, ?MAP_OP_RESTORE_DATA})		-> 'RestoreData';
-rec4op({local, ?MAP_OP_SRI_FOR_GPRS})		-> 'SendRoutingInfoForGprs';
-rec4op({local, ?MAP_OP_FAILURE_REPORT})		-> 'FailureReport';
-rec4op({local, ?MAP_OP_NOTE_MS_PRESENT_GPRS})	-> 'NoteMsPresentForGprs';
-rec4op({local, ?MAP_OP_NOTE_MM_EVENT})		-> 'NoteMM-Event';
-rec4op({local, ?MAP_OP_SRI_FOR_SM})		-> 'SendRoutingInfo';
-rec4op({local, ?MAP_OP_MO_FORWARD_SM})		-> 'MO-ForwardSM-';
-rec4op({local, ?MAP_OP_MT_FORWARD_SM})		-> 'MT-ForwardSM-';
-rec4op({local, ?MAP_OP_REPORT_SM_DEL_STATUS})	-> 'ReportSM-DeliveryStatus';
-rec4op({local, ?MAP_OP_NOTE_SUBSCR_PRESENT})	-> {error, 'FIXME'};
-rec4op({local, ?MAP_OP_ALERT_SC_NO_RESULT})	-> {error, 'FIXME'};
-rec4op({local, ?MAP_OP_ALERT_SC})		-> 'AlertServiceCentre';
-rec4op({local, ?MAP_OP_INFORM_SC})		-> 'InformServiceCentre';
-rec4op({local, ?MAP_OP_READY_FOR_SM})		-> 'ReadyForSM-';
-rec4op({local, ?MAP_OP_MT_FW_SMS_VGCS})		-> 'MT-ForwardSM-VGCS-'.
+rec4op({local, ?MAP_OP_UPDATE_LOCATION})	-> "UpdateLocation";
+rec4op({local, ?MAP_OP_CANCEL_LOCATION})	-> "CancelLocation";
+rec4op({local, ?MAP_OP_PURGE_MS})		-> "PurgeMS-";
+rec4op({local, ?MAP_OP_SEND_IDENTIFICATION})	-> "SendIdentification";
+rec4op({local, ?MAP_OP_UPDATE_GRPS_LOCATION})	-> "UpdateGprsLocation";
+rec4op({local, ?MAP_OP_PROVIDE_SUBSCR_INFO})	-> "ProvideSubscriberInfo";
+rec4op({local, ?MAP_OP_ANYTIME_INTERROGATION})	-> "AnyTimeInterrogation";
+rec4op({local, ?MAP_OP_ANYTIME_SUBSCR_INTERR})	-> "AnyTimeSubscriptionInterrogation";
+rec4op({local, ?MAP_OP_ANYTIME_MODIFICATION})	-> "AnyTimeModification";
+rec4op({local, ?MAP_OP_NOTE_SUBSCR_DAT_MODIF})	-> "NoteSubscriberDataModified";
+rec4op({local, ?MAP_OP_PREPARE_HANDOVER})	-> "PrepareHO-";
+rec4op({local, ?MAP_OP_SEND_END_SIGNAL})	-> "SendEndSignal-";
+rec4op({local, ?MAP_OP_PROC_ACC_SIGNALLING})	-> "ProcessAccessSignalling-";
+rec4op({local, ?MAP_OP_FWD_ACC_SIGNALLING})	-> "ForwardAccessSignalling-";
+rec4op({local, ?MAP_OP_PREPARE_SUBSEQ_HO})	-> "PrepareSubsequentHO-";
+rec4op({local, ?MAP_OP_SEND_AUTH_INFO})		-> "SendAuthenticationInfo";
+rec4op({local, ?MAP_OP_AUTH_FAIL_REPORT})	-> "AuthenticationFailureReport";
+rec4op({local, ?MAP_OP_CHECK_IMEI})		-> "CheckIMEI-";
+rec4op({local, ?MAP_OP_INSERT_SUBSCR_DATA})	-> "InsertSubscriberData";
+rec4op({local, ?MAP_OP_DELETE_SUBSCR_DATA})	-> "DeleteSubscriberData";
+rec4op({local, ?MAP_OP_RESET})			-> "Reset";
+rec4op({local, ?MAP_OP_FW_CHECK_SS})		-> {error, "FIXME"};
+rec4op({local, ?MAP_OP_RESTORE_DATA})		-> "RestoreData";
+rec4op({local, ?MAP_OP_SRI_FOR_GPRS})		-> "SendRoutingInfoForGprs";
+rec4op({local, ?MAP_OP_FAILURE_REPORT})		-> "FailureReport";
+rec4op({local, ?MAP_OP_NOTE_MS_PRESENT_GPRS})	-> "NoteMsPresentForGprs";
+rec4op({local, ?MAP_OP_NOTE_MM_EVENT})		-> "NoteMM-Event";
+rec4op({local, ?MAP_OP_SRI_FOR_SM})		-> "SendRoutingInfo";
+rec4op({local, ?MAP_OP_MO_FORWARD_SM})		-> "MO-ForwardSM-";
+rec4op({local, ?MAP_OP_MT_FORWARD_SM})		-> "MT-ForwardSM-";
+rec4op({local, ?MAP_OP_REPORT_SM_DEL_STATUS})	-> "ReportSM-DeliveryStatus";
+rec4op({local, ?MAP_OP_NOTE_SUBSCR_PRESENT})	-> {error, "FIXME"};
+rec4op({local, ?MAP_OP_ALERT_SC_NO_RESULT})	-> {error, "FIXME"};
+rec4op({local, ?MAP_OP_ALERT_SC})		-> "AlertServiceCentre";
+rec4op({local, ?MAP_OP_INFORM_SC})		-> "InformServiceCentre";
+rec4op({local, ?MAP_OP_READY_FOR_SM})		-> "ReadyForSM-";
+rec4op({local, ?MAP_OP_MT_FW_SMS_VGCS})		-> "MT-ForwardSM-VGCS-".
 % FIXME: SS-Operations.asn, SupplementaryServiceOperations, MAP-CallHandlingOperations, MAP-LocationServiceOperations
 
 argres(arg) -> "Arg";
