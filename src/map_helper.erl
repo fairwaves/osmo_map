@@ -35,7 +35,7 @@
 -author('Harald Welte <laforge@gnumonks.org>').
 
 -include_lib("osmo_ss7/include/isup.hrl").
--include_lib("osmo_map/include/map.hrl").
+-include_lib("map.hrl").
 -include_lib("osmo_map/include/map_operations.hrl").
 
 -export([postproc/2, postproc_gt/2, postproc_imsi/2, postproc_msisdn/2,
